@@ -262,14 +262,14 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
 
         <div id="score-right">
           <div id="slots" style="display:none"></div>
-          <div class="card" style="padding:12px 14px">
-            <div class="ctitle">手動輸入分數（無落點記錄）</div>
-            <div class="sbns" id="sbns"></div>
-            <button class="btn suc" style="width:100%;margin-top:10px;padding:12px" id="finbtn" onclick="finishEnd()" disabled>完成此輪 →</button>
-          </div>
           <div class="card">
             <div class="ctitle">本場次輪次記錄</div>
             <div id="ehlist"></div>
+          </div>
+          <div class="card" style="padding:8px 10px">
+            <div class="ctitle" style="font-size:.72rem;margin-bottom:6px">手動輸入分數（無落點記錄）</div>
+            <div class="sbns" id="sbns"></div>
+            <button class="btn suc" style="width:100%;margin-top:7px;padding:9px;font-size:.85rem" id="finbtn" onclick="finishEnd()" disabled>完成此輪 →</button>
           </div>
           <div class="flex gap8" style="margin-bottom:10px">
             <button class="btn sec" style="flex:1;padding:11px" onclick="confirmFinish()">完成場次並儲存</button>
