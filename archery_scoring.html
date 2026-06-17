@@ -1000,6 +1000,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     e.preventDefault();
     hitSmall(e.clientX, e.clientY);
   });
+  svg.addEventListener('touchstart', e=>{
+    if(e.touches.length===2){ e.preventDefault(); openTargetModal(); }
+  },{passive:false});
 
   // Big target with pinch-zoom
   const wrap=document.getElementById('tsvg-big-wrap');
