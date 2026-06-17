@@ -265,16 +265,15 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
         </div>
 
         <div id="score-right">
-          <div class="card" style="padding:12px 14px">
+          <div class="card" style="padding:7px 10px">
             <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span class="ctitle" style="margin:0">本輪箭矢</span>
-              <div style="display:flex;gap:6px">
-                <button class="clear-btn" onclick="clearEnd()">清空本輪</button>
-                <button class="undo-btn" onclick="undoLast()">↩</button>
+              <span class="ctitle" style="margin:0;font-size:.68rem">本輪箭矢</span>
+              <div style="display:flex;gap:5px">
+                <button class="clear-btn" style="height:26px;padding:0 8px;font-size:.72rem" onclick="clearEnd()">清空</button>
+                <button class="undo-btn" style="width:26px;height:26px;font-size:.9rem" onclick="undoLast()">↩</button>
               </div>
             </div>
-            <div class="slot-del-hint">點擊已記錄的箭矢可個別刪除</div>
-            <div id="slots" class="slots" style="margin-top:6px"></div>
+            <div id="slots" class="slots" style="margin:0;gap:4px"></div>
           </div>
           <div class="card" style="padding:12px 14px">
             <div class="ctitle">手動輸入分數（無落點記錄）</div>
