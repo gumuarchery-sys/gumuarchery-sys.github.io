@@ -1170,25 +1170,51 @@ function renderMarkers(){
 
 function renderEndsHistory(){
   const el=document.getElementById('ehlist');
-  if(!S.cur||!S.cur.ends.length){ el.innerHTML='<div style="font-size:.8rem;color:var(--dim);text-align:center;padding:6px">尚無完成的輪次</div>'; return; }
-  const delBtn=i=>`<button onclick="deleteEnd(${i})" style="background:rgba(244,67,54,.15);border:none;color:var(--err);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:.75rem;flex-shrink:0;margin-left:4px">🗑</button>`;
-  if(isMatchPlay(S.cur)){
+  if(!S.cur){ el.innerHTML=''; return; }
+  const delBtn=i=>`<button onclick="deleteEnd(${i})" style="background:rgba(244,67,54,.15);border:none;color:var(--err);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:.75rem;flex-shrink:0;margin-left:4px;-webkit-tap-highlight-color:transparent">🗑</button>`;
+  // ── 當前輪 ──
+  const arrows=S.end.arrows;
+  const curBdgs=arrows.map((a,i)=>{
+    const c=COL[a.s];
+    return`<span class="ebdg" style="background:${c.bg};color:${c.fg};cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="deleteCurrentArrow(${i})">${a.s}</span>`;
+  }).join('');
+  const emptyBdgs=Array(Math.max(0,S.cur.ape-arrows.length)).fill(`<span class="ebdg" style="background:rgba(0,0,0,.07);color:var(--dim);opacity:.5">·</span>`).join('');
+  const ctrlBtns=`<div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
+    ${arrows.length?`<button onclick="undoLast()" style="background:rgba(192,57,43,.12);border:none;color:var(--err);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:.75rem;-webkit-tap-highlight-color:transparent">↩</button>`:''}
+    ${arrows.length>=S.cur.ape?`<button onclick="finishEnd()" style="background:var(--ok);border:none;color:#fff;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:.75rem;font-weight:700;-webkit-tap-highlight-color:transparent">完成</button>`:''}
+  </div>`;
+  const curRow=`<div class="erow" style="border:1.5px solid var(--accent);margin-bottom:5px">
+    <span class="enum" style="color:var(--accent);font-weight:700;font-size:.72rem">${S.cur.ends.length+1}</span>
+    <div class="earr">${curBdgs}${emptyBdgs}</div>
+    ${ctrlBtns}
+  </div>`;
+  // ── 已完成輪次 ──
+  const scoreOrder=s=>s==='X'?11:s==='M'?0:parseInt(s)||0;
+  let doneRows='';
+  if(!S.cur.ends.length){
+    doneRows='<div style="font-size:.78rem;color:var(--dim);text-align:center;padding:4px 0">尚無完成的輪次</div>';
+  } else if(isMatchPlay(S.cur)){
     const cfg=S.cur.matchCfg||getMatchConfig(S.cur.sessionType,S.cur.bowType);
-    el.innerHTML=S.cur.ends.map((e,i)=>{
+    doneRows=S.cur.ends.map((e,i)=>{
       const won=e.mySP>e.oppSP, draw=e.mySP===e.oppSP;
       const rc=cfg?.useSet?(won?'mend-won':draw?'mend-draw':'mend-lost'):'';
       const sp=cfg?.useSet?`<span style="font-size:.7rem;color:${won?'#4caf50':draw?'var(--dim)':'var(--err)'}"> [${e.mySP}:${e.oppSP}]</span>`:'';
       const soTag=e.isShootoff?`<span style="font-size:.65rem;background:rgba(255,200,0,.2);color:#f5c518;border-radius:3px;padding:1px 4px;margin-left:3px">加射</span>`:'';
       return`<div class="erow ${rc}"><span class="enum">${e.n}</span><div style="flex:1;font-size:.8rem">我 <b style="color:var(--accent)">${e.tot}</b> vs 對 <b>${e.oppTot}</b>${sp}${soTag}</div>${delBtn(i)}</div>`;
     }).join('');
-    return;
+  } else {
+    doneRows=S.cur.ends.map((e,i)=>{
+      const sorted=[...e.arrows].sort((a,b)=>scoreOrder(b.s)-scoreOrder(a.s));
+      const bdgs=sorted.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
+      return`<div class="erow"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
+    }).join('');
   }
-  const scoreOrder=s=>s==='X'?11:s==='M'?0:parseInt(s)||0;
-  el.innerHTML=S.cur.ends.map((e,i)=>{
-    const sorted=[...e.arrows].sort((a,b)=>scoreOrder(b.s)-scoreOrder(a.s));
-    const bdgs=sorted.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
-    return`<div class="erow"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
-  }).join('');
+  el.innerHTML=curRow+doneRows;
+}
+function deleteCurrentArrow(idx){
+  if(!S.cur||idx<0||idx>=S.end.arrows.length) return;
+  S.end.arrows.splice(idx,1);
+  save(); renderSlots(); renderMarkers(); updateTotals(); updateFinBtn(); updateBigModalHint();
 }
 
 function deleteEnd(idx){
