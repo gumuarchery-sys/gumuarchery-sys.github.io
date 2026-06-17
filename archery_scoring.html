@@ -1460,6 +1460,20 @@ function openNew(){
   document.getElementById('i-date').value=today();
   document.getElementById('i-time').value=nowTime();
   initForm();
+  // 同一天有場次時，預填裝備資訊
+  const todayStr=today();
+  const ref=[...(S.cur?[S.cur]:[]),...S.sessions].find(s=>s.date===todayStr);
+  if(ref){
+    document.getElementById('i-dist').value=ref.dist||'70m';
+    document.getElementById('i-face').value=ref.face||'122cm';
+    document.getElementById('i-arrowmodel').value=ref.arrowModel||'';
+    document.getElementById('i-arrowsize').value=ref.arrowSize||'';
+    if(ref.weather){
+      selectedWx=ref.weather.split(' ').filter(Boolean);
+      document.querySelectorAll('.wx-btn').forEach(b=>b.classList.toggle('on',selectedWx.includes(b.textContent.trim())));
+    }
+    if(ref.body){ selectedBody=ref.body; document.querySelectorAll('#body-stars .star').forEach((s,i)=>s.classList.toggle('on',i<ref.body)); }
+  }
   document.getElementById('newmodal').classList.add('on');
 }
 function closeNew(){ document.getElementById('newmodal').classList.remove('on'); }
