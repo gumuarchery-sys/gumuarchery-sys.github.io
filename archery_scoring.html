@@ -1141,7 +1141,7 @@ function renderScoreBtns(){
   if(!S.cur) return;
   const isC=S.cur.bowType==='compound';
   const el=document.getElementById('sbns');
-  el.className='sbns '+(isC?'compound':'recurve');
+  el.className='sbns';
   el.innerHTML=(isC?SC_COMPOUND:SC_RECURVE).map(s=>{
     const c=COL[s];
     return`<button class="sbn" style="background:${c.bg};color:${c.fg}" onclick="addArrow('${s}',null,null)">${s}</button>`;
