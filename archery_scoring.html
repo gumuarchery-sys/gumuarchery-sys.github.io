@@ -982,54 +982,49 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const sx=(cx-r.left)*(300/r.width), sy=(cy-r.top)*(300/r.height);
     addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2), S.cur.bowType||'recurve'), sx/300, sy/300);
   }
-  let sScale=1,sTx=0,sTy=0,sPinching=false,sPinchDist0=0,sPinchScale0=1,sPinchMx=0,sPinchMy=0,sTapX=0,sTapY=0,sTapMoved=false;
+  const tgtWrap=svg.parentElement;
+  const SZ={scale:1,tx:0,ty:0};
   function applySmallZoom(){
-    sScale=Math.max(1,Math.min(8,sScale));
-    const pw=svg.parentElement.clientWidth,ph=svg.parentElement.clientHeight;
-    const mx=(pw*(sScale-1))/2,my=(ph*(sScale-1))/2;
-    sTx=Math.max(-mx,Math.min(mx,sTx));
-    sTy=Math.max(-my,Math.min(my,sTy));
+    SZ.scale=Math.max(1,Math.min(8,SZ.scale));
+    const m=(SZ.scale-1)*svg.clientWidth/2;
+    SZ.tx=Math.max(-m,Math.min(m,SZ.tx));
+    SZ.ty=Math.max(-m,Math.min(m,SZ.ty));
     svg.style.transformOrigin='center';
-    svg.style.transform=`translate(${sTx}px,${sTy}px) scale(${sScale})`;
+    svg.style.transform=`translate(${SZ.tx}px,${SZ.ty}px) scale(${SZ.scale})`;
   }
-  svg.addEventListener('touchstart',e=>{
+  let sTouches=0,sPinchDist=0,sPanX=0,sPanY=0,sDidMove=false,sTapX=0,sTapY=0,sLastTouch=0;
+  tgtWrap.addEventListener('touchstart',e=>{
+    sTouches=e.touches.length;
+    if(sTouches===2){
+      sPinchDist=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+      sDidMove=true;
+    } else {
+      sPanX=e.touches[0].clientX; sPanY=e.touches[0].clientY;
+      sTapX=e.touches[0].clientX; sTapY=e.touches[0].clientY;
+      sDidMove=false;
+    }
+  },{passive:true});
+  tgtWrap.addEventListener('touchmove',e=>{
     e.preventDefault();
     if(e.touches.length===2){
-      sPinching=true;
-      const dx=e.touches[1].clientX-e.touches[0].clientX,dy=e.touches[1].clientY-e.touches[0].clientY;
-      sPinchDist0=Math.sqrt(dx*dx+dy*dy)||1;
-      sPinchScale0=sScale;
-      sPinchMx=(e.touches[0].clientX+e.touches[1].clientX)/2;
-      sPinchMy=(e.touches[0].clientY+e.touches[1].clientY)/2;
-    } else if(e.touches.length===1){
-      sPinching=false; sTapMoved=false;
-      sTapX=e.touches[0].clientX; sTapY=e.touches[0].clientY;
-    }
-  },{passive:false});
-  svg.addEventListener('touchmove',e=>{
-    e.preventDefault();
-    if(e.touches.length===2&&sPinching){
-      const dx=e.touches[1].clientX-e.touches[0].clientX,dy=e.touches[1].clientY-e.touches[0].clientY;
-      const dist=Math.sqrt(dx*dx+dy*dy)||1;
-      sScale=sPinchScale0*(dist/sPinchDist0);
-      const mx=(e.touches[0].clientX+e.touches[1].clientX)/2;
-      const my=(e.touches[0].clientY+e.touches[1].clientY)/2;
-      sTx+=(mx-sPinchMx); sTy+=(my-sPinchMy);
-      sPinchMx=mx; sPinchMy=my;
+      sDidMove=true;
+      const d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+      SZ.scale=Math.max(1,Math.min(8,SZ.scale*(d/sPinchDist)));
+      sPinchDist=d; applySmallZoom();
+    } else if(e.touches.length===1&&SZ.scale>1.02){
+      sDidMove=true;
+      SZ.tx+=e.touches[0].clientX-sPanX; SZ.ty+=e.touches[0].clientY-sPanY;
+      sPanX=e.touches[0].clientX; sPanY=e.touches[0].clientY;
       applySmallZoom();
-    } else if(e.touches.length===1&&!sPinching){
-      const dx=e.touches[0].clientX-sTapX,dy=e.touches[0].clientY-sTapY;
-      if(Math.abs(dx)>5||Math.abs(dy)>5){
-        sTapMoved=true;
-        if(sScale>1){ sTx+=dx; sTy+=dy; sTapX=e.touches[0].clientX; sTapY=e.touches[0].clientY; applySmallZoom(); }
-      }
+    } else if(e.touches.length===1){
+      if(Math.abs(e.touches[0].clientX-sTapX)>12||Math.abs(e.touches[0].clientY-sTapY)>12) sDidMove=true;
     }
   },{passive:false});
-  svg.addEventListener('touchend',e=>{
-    if(e.touches.length<2) sPinching=false;
-    if(e.changedTouches.length&&e.touches.length===0&&!sTapMoved) hitSmall(sTapX,sTapY);
+  tgtWrap.addEventListener('touchend',e=>{
+    sLastTouch=Date.now();
+    if(!sDidMove&&sTouches===1){ e.preventDefault(); hitSmall(sTapX,sTapY); }
   },{passive:false});
-  svg.addEventListener('pointerdown',e=>{ if(e.pointerType==='mouse') hitSmall(e.clientX,e.clientY); });
+  svg.addEventListener('click',e=>{ if(Date.now()-sLastTouch>500) hitSmall(e.clientX,e.clientY); });
 
   // Big target with pinch-zoom
   const wrap=document.getElementById('tsvg-big-wrap');
