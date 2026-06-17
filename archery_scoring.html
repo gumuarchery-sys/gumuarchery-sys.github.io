@@ -1138,19 +1138,7 @@ function renderScoreBtns(){
 }
 
 function renderSlots(){
-  if(!S.cur) return;
-  let h='';
-  for(let i=0;i<S.cur.ape;i++){
-    const a=S.end.arrows[i], cur=!a&&i===S.end.arrows.length;
-    if(a){
-      const c=COL[a.s];
-      const dot=a.x!==null?'<span style="position:absolute;bottom:2px;right:3px;font-size:.42rem;opacity:.8">●</span>':'';
-      h+=`<div class="slot filled" style="background:${c.bg};color:${c.fg};border-color:${c.bg}" onclick="openSlotMenu(${i},event)">${a.s}${dot}</div>`;
-    } else {
-      h+=`<div class="slot ${cur?'cur':'empty'}">${cur?i+1:''}</div>`;
-    }
-  }
-  document.getElementById('slots').innerHTML=h;
+  renderEndsHistory();
 }
 
 function renderMarkers(){
