@@ -1194,8 +1194,10 @@ function renderEndsHistory(){
     }).join('');
     return;
   }
+  const scoreOrder=s=>s==='X'?11:s==='M'?0:parseInt(s)||0;
   el.innerHTML=S.cur.ends.map((e,i)=>{
-    const bdgs=e.arrows.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
+    const sorted=[...e.arrows].sort((a,b)=>scoreOrder(b.s)-scoreOrder(a.s));
+    const bdgs=sorted.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
     return`<div class="erow"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
   }).join('');
 }
