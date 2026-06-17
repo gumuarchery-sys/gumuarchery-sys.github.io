@@ -1099,7 +1099,7 @@ function renderMarkersBig(){
   }));
   S.end.arrows.forEach(a=>{
     if(a.x===null) return;
-    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r=".5" fill="#27ae60" stroke="none" opacity=".95"/>`;
+    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="4" fill="#27ae60" stroke="none" opacity=".95"/>`;
   });
   g.innerHTML=h;
 }
