@@ -1,4 +1,4 @@
-const CACHE = 'archery-v4';
+const CACHE = 'archery-v5';
 const ASSETS = [
   '/archery_scoring.html',
   '/manifest.json',

@@ -546,20 +546,23 @@ function nowTime(){ return new Date().toTimeString().slice(0,5); }
 function starsHTML(n){ return '★'.repeat(n)+'☆'.repeat(5-n); }
 
 function scoreFromDist(d, bowType){
+  // 壓線容許：2 SVG 單位（約手機上 2px），落點中心在環線外 2 單位內算高分
+  const t = 2;
+  const e = Math.max(0, d - t);
   if(bowType==='compound'){
-    if(d<=11.67)  return 'X';
-    if(d<=23.33)  return '10';
-    if(d<=46.67)  return '9';
-    if(d<=70)     return '8';
-    if(d<=93.33)  return '7';
-    if(d<=116.67) return '6';
-    if(d<=140)    return '5';
+    if(e<=11.67)  return 'X';
+    if(e<=23.33)  return '10';
+    if(e<=46.67)  return '9';
+    if(e<=70)     return '8';
+    if(e<=93.33)  return '7';
+    if(e<=116.67) return '6';
+    if(e<=140)    return '5';
     return 'M';
   }
-  if(d<=7)   return 'X';  if(d<=14)  return '10'; if(d<=28) return '9';
-  if(d<=42)  return '8';  if(d<=56)  return '7';  if(d<=70) return '6';
-  if(d<=84)  return '5';  if(d<=98)  return '4';  if(d<=112)return '3';
-  if(d<=126) return '2';  if(d<=140) return '1';  return 'M';
+  if(e<=7)   return 'X';  if(e<=14)  return '10'; if(e<=28) return '9';
+  if(e<=42)  return '8';  if(e<=56)  return '7';  if(e<=70) return '6';
+  if(e<=84)  return '5';  if(e<=98)  return '4';  if(e<=112)return '3';
+  if(e<=126) return '2';  if(e<=140) return '1';  return 'M';
 }
 
 function isMiss(s, bowType){
