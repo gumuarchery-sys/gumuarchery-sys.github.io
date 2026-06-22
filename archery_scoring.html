@@ -546,17 +546,20 @@ function nowTime(){ return new Date().toTimeString().slice(0,5); }
 function starsHTML(n){ return '★'.repeat(n)+'☆'.repeat(5-n); }
 
 function scoreFromDist(d, bowType){
+  // 壓線計算較高分：落點標記半徑約 4 SVG 單位，壓線往內圈算
+  const LINE = 4;
+  const ed = Math.max(0, d - LINE);
   if(bowType==='compound'){
-    if(d<=5)      return 'X';
-    if(d<=23.33)  return '10';
-    if(d<=46.67)  return '9';
-    if(d<=70)     return '8';
-    if(d<=93.33)  return '7';
-    if(d<=116.67) return '6';
-    if(d<=140)    return '5';
+    if(ed<=11.67)  return 'X';
+    if(ed<=23.33)  return '10';
+    if(ed<=46.67)  return '9';
+    if(ed<=70)     return '8';
+    if(ed<=93.33)  return '7';
+    if(ed<=116.67) return '6';
+    if(ed<=140)    return '5';
     return 'M';
   }
-  if(d<=5)   return 'X';  if(d<=14)  return '10'; if(d<=28) return '9';
+  if(ed<=7)   return 'X';  if(ed<=14)  return '10'; if(ed<=28) return '9';
   if(d<=42)  return '8';  if(d<=56)  return '7';  if(d<=70) return '6';
   if(d<=84)  return '5';  if(d<=98)  return '4';  if(d<=112)return '3';
   if(d<=126) return '2';  if(d<=140) return '1';  return 'M';
