@@ -560,9 +560,9 @@ function scoreFromDist(d, bowType){
     return 'M';
   }
   if(ed<=7)   return 'X';  if(ed<=14)  return '10'; if(ed<=28) return '9';
-  if(d<=42)  return '8';  if(d<=56)  return '7';  if(d<=70) return '6';
-  if(d<=84)  return '5';  if(d<=98)  return '4';  if(d<=112)return '3';
-  if(d<=126) return '2';  if(d<=140) return '1';  return 'M';
+  if(ed<=42)  return '8';  if(ed<=56)  return '7';  if(ed<=70) return '6';
+  if(ed<=84)  return '5';  if(ed<=98)  return '4';  if(ed<=112)return '3';
+  if(ed<=126) return '2';  if(ed<=140) return '1';  return 'M';
 }
 
 function isMiss(s, bowType){
