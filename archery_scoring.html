@@ -1124,9 +1124,10 @@ function renderMarkersBig(){
     const c=COL[a.s];
     h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3.5" fill="${c.bg}" stroke="${c.fg}" stroke-width=".8" opacity=".18"/>`;
   }));
-  S.end.arrows.forEach(a=>{
+  S.end.arrows.forEach((a,i)=>{
     if(a.x===null) return;
-    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="4" fill="#27ae60" stroke="none" opacity=".95"/>`;
+    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3" fill="#27ae60" stroke="none" opacity=".95"/>`;
+    h+=`<text x="${a.x*300}" y="${a.y*300+1.2}" text-anchor="middle" font-size="3.5" fill="#fff" font-weight="bold">${i+1}</text>`;
   });
   g.innerHTML=h;
 }
@@ -1187,9 +1188,10 @@ function renderMarkers(){
     const c=COL[a.s];
     h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3" fill="${c.bg}" stroke="${c.fg}" stroke-width=".8" opacity=".2"/>`;
   }));
-  S.end.arrows.forEach(a=>{
+  S.end.arrows.forEach((a,i)=>{
     if(a.x===null) return;
-    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="2.5" fill="#27ae60" stroke="none" opacity=".95"/>`;
+    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="2" fill="#27ae60" stroke="none" opacity=".95"/>`;
+    h+=`<text x="${a.x*300}" y="${a.y*300+0.8}" text-anchor="middle" font-size="2.2" fill="#fff" font-weight="bold">${i+1}</text>`;
   });
   g.innerHTML=h;
 }
@@ -1501,19 +1503,26 @@ function openNew(){
   document.getElementById('i-date').value=today();
   document.getElementById('i-time').value=nowTime();
   initForm();
-  // 同一天有場次時，預填裝備資訊
+  const allSessions=[...(S.cur?[S.cur]:[]),...S.sessions];
   const todayStr=today();
-  const ref=[...(S.cur?[S.cur]:[]),...S.sessions].find(s=>s.date===todayStr);
-  if(ref){
-    document.getElementById('i-dist').value=ref.dist||'70m';
-    document.getElementById('i-face').value=ref.face||'122cm';
-    document.getElementById('i-arrowmodel').value=ref.arrowModel||'';
-    document.getElementById('i-arrowsize').value=ref.arrowSize||'';
-    if(ref.weather){
-      selectedWx=ref.weather.split(' ').filter(Boolean);
+  const todayRef=allSessions.find(s=>s.date===todayStr);
+  const src=todayRef||allSessions[0]; // 優先今日場次，否則取最近一筆
+  if(src){
+    document.getElementById('i-archer').value=src.archer||'';
+    if(src.bowType){
+      selectedBowType=src.bowType;
+      document.getElementById('bow-recurve').classList.toggle('on',src.bowType==='recurve');
+      document.getElementById('bow-compound').classList.toggle('on',src.bowType==='compound');
+    }
+    document.getElementById('i-dist').value=src.dist||'70m';
+    document.getElementById('i-face').value=src.face||'122cm';
+    document.getElementById('i-arrowmodel').value=src.arrowModel||'';
+    document.getElementById('i-arrowsize').value=src.arrowSize||'';
+    if(src.weather){
+      selectedWx=src.weather.split(' ').filter(Boolean);
       document.querySelectorAll('.wx-btn').forEach(b=>b.classList.toggle('on',selectedWx.includes(b.textContent.trim())));
     }
-    if(ref.body){ selectedBody=ref.body; document.querySelectorAll('#body-stars .star').forEach((s,i)=>s.classList.toggle('on',i<ref.body)); }
+    if(src.body){selectedBody=src.body;document.querySelectorAll('#body-stars .star').forEach((s,i)=>s.classList.toggle('on',i<src.body));}
   }
   document.getElementById('newmodal').classList.add('on');
 }
