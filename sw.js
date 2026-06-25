@@ -1,8 +1,9 @@
-const CACHE = 'archery-v6';
+const CACHE = 'archery-v7';
 const ASSETS = [
   '/archery_scoring.html',
   '/manifest.json',
-  '/icon.svg'
+  '/icon.svg',
+  '/icon.png'
 ];
 
 self.addEventListener('install', e => {
