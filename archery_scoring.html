@@ -1544,7 +1544,17 @@ function switchTab(t){
 let _tt;
 function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('on'),2800); }
 
+function cleanOldSessions(){
+  const cutoff=new Date();
+  cutoff.setDate(cutoff.getDate()-30);
+  const cutoffStr=cutoff.toISOString().slice(0,10);
+  const before=S.sessions.length;
+  S.sessions=S.sessions.filter(s=>s.date>=cutoffStr);
+  if(S.sessions.length<before) save();
+}
+
 load();
+cleanOldSessions();
 renderScore();
 renderHistory();
 renderStats();
