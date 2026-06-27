@@ -585,6 +585,23 @@ function calcStats(arrows, bowType){
   };
 }
 
+function calcConcentration(arrows){
+  const withCoords=arrows.filter(a=>a.x!==null&&a.y!==null);
+  if(!withCoords.length) return null;
+  const distances=withCoords.map(a=>{const dx=a.x-0.5,dy=a.y-0.5;return Math.sqrt(dx*dx+dy*dy)*100;});
+  distances.sort((a,b)=>a-b);
+  const avgDist=distances.reduce((s,d)=>s+d,0)/distances.length;
+  const cep=distances[Math.floor(distances.length*0.5)];
+  const variance=distances.reduce((s,d)=>s+Math.pow(d-avgDist,2),0)/distances.length;
+  const stdDev=Math.sqrt(variance);
+  return {
+    avgDist: avgDist.toFixed(2),
+    cep: cep.toFixed(2),
+    stdDev: stdDev.toFixed(2),
+    withCoords: withCoords.length
+  };
+}
+
 // ── TARGET SVG CONTENT ──────────────────────────
 function recurveRings(){
   return `
@@ -1334,6 +1351,7 @@ function renderStats(){
   let missN=0;
   S.sessions.forEach(s=>s.ends.flatMap(e=>e.arrows).forEach(a=>{ if(isMiss(a.s,s.bowType||'recurve')) missN++; }));
   const cnt={}; SC_ALL.forEach(s=>cnt[s]=0); all.forEach(a=>cnt[a.s]=(cnt[a.s]||0)+1);
+  const conc=calcConcentration(all);
   el.innerHTML=`
     <div class="card">
       <div class="ctitle">整體數據</div>
@@ -1353,6 +1371,15 @@ function renderStats(){
         <div class="sitem"><div class="sval">${tenN}</div><div class="slbl">10+X 總數</div></div>
       </div>
     </div>
+    ${conc?`<div class="card">
+      <div class="ctitle">集中率分析</div>
+      <div class="sgrid">
+        <div class="sitem"><div class="sval">${conc.avgDist}</div><div class="slbl">平均距靶心%</div></div>
+        <div class="sitem"><div class="sval">${conc.cep}</div><div class="slbl">中距(CEP)%</div></div>
+        <div class="sitem"><div class="sval">${conc.stdDev}</div><div class="slbl">標準差%</div></div>
+        <div class="sitem"><div class="sval">${conc.withCoords}</div><div class="slbl">有落點記錄</div></div>
+      </div>
+    </div>`:''}
     <div class="card">
       <div class="ctitle">分數分布</div>
       ${SC_ALL.map(s=>{
