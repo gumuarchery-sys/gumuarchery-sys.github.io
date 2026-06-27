@@ -524,6 +524,7 @@ let S = { sessions:[], cur:null, end:{arrows:[]} };
 let selectedWx = ['☀️ 晴天'];
 let selectedBody = 3;
 let selectedBowType = 'recurve';
+let selectedEndIndex = -1;
 let pendingSlotIndex = -1;
 let pendingEndTot = 0;
 
@@ -1183,10 +1184,14 @@ function renderSlots(){
 function renderMarkers(){
   const g=document.getElementById('markers'); if(!g) return;
   let h='';
-  if(S.cur) S.cur.ends.forEach(e=>e.arrows.forEach(a=>{
+  if(S.cur) S.cur.ends.forEach((e,idx)=>e.arrows.forEach(a=>{
     if(a.x===null) return;
-    const c=COL[a.s];
-    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3" fill="${c.bg}" stroke="${c.fg}" stroke-width=".8" opacity=".2"/>`;
+    if(idx===selectedEndIndex){
+      h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="4" fill="none" stroke="#00FF00" stroke-width="1"/>`;
+    }else{
+      const c=COL[a.s];
+      h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3" fill="${c.bg}" stroke="${c.fg}" stroke-width=".8" opacity=".2"/>`;
+    }
   }));
   S.end.arrows.forEach((a,i)=>{
     if(a.x===null) return;
@@ -1234,10 +1239,16 @@ function renderEndsHistory(){
     doneRows=S.cur.ends.map((e,i)=>{
       const sorted=[...e.arrows].sort((a,b)=>scoreOrder(b.s)-scoreOrder(a.s));
       const bdgs=sorted.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
-      return`<div class="erow"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
+      const isSelected=i===selectedEndIndex?'border-color:var(--accent);background:rgba(220,38,38,.08)':'';
+      return`<div class="erow" onclick="selectEnd(${i})" style="cursor:pointer;transition:all .2s;border:1px solid transparent;${isSelected}"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
     }).join('');
   }
   el.innerHTML=curRow+doneRows;
+}
+function selectEnd(idx){
+  selectedEndIndex=selectedEndIndex===idx?-1:idx;
+  renderEndsHistory();
+  renderMarkers();
 }
 function deleteCurrentArrow(idx){
   if(!S.cur||idx<0||idx>=S.end.arrows.length) return;
