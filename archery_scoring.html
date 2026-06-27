@@ -4,31 +4,37 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>🎯 射箭計分系統</title>
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#D8E8F8">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="射箭計分">
+<link rel="apple-touch-icon" href="icon.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
-  --bg:#1a1a2e;--card:#16213e;--card2:#0f3460;
-  --accent:#e2b96a;--text:#e0e0e0;--dim:#888;
-  --ok:#4caf50;--err:#f44336;
-  --border:rgba(255,255,255,.1);
+  --bg:#EEF4FF;--card:#FFFFFF;--card2:#D8E8F8;
+  --accent:#C0392B;--text:#1a2844;--dim:#5a7599;
+  --ok:#27ae60;--err:#e74c3c;
+  --border:rgba(80,120,180,.18);
 }
 html,body{height:100%}
-body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh}
-.header{background:var(--card2);padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 12px rgba(0,0,0,.5);height:52px;gap:16px}
+body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;min-height:100vh;touch-action:manipulation}
+.header{background:var(--card2);padding:0 20px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:100;box-shadow:0 2px 8px rgba(0,0,0,.15);height:52px;gap:16px}
 .header h1{font-size:1.1rem;color:var(--accent);white-space:nowrap;flex-shrink:0}
 .hinfo{font-size:.78rem;color:var(--dim);flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .topnav{display:none;gap:4px}
 .tnbtn{padding:8px 16px;background:none;border:none;color:var(--dim);cursor:pointer;font-size:.85rem;font-weight:500;border-radius:6px;transition:all .15s;white-space:nowrap}
-.tnbtn:hover{background:rgba(255,255,255,.07);color:var(--text)}
-.tnbtn.on{background:rgba(226,185,106,.15);color:var(--accent)}
-.tnbtn.new-btn{background:var(--accent);color:#1a1a1a;font-weight:700}
-.tnbtn.new-btn:hover{background:#f5d08a}
-.bnav{position:fixed;bottom:0;left:0;right:0;background:var(--card2);display:flex;border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
+.tnbtn:hover{background:rgba(0,0,0,.06);color:var(--text)}
+.tnbtn.on{background:rgba(220,38,38,.15);color:var(--accent)}
+.tnbtn.new-btn{background:var(--accent);color:#fff;font-weight:700}
+.tnbtn.new-btn:hover{background:#ef4444}
+.bnav{position:fixed;bottom:54px;left:0;right:0;background:var(--card2);display:flex;border-top:1px solid var(--border);z-index:100;padding-bottom:env(safe-area-inset-bottom)}
 .nbtn{flex:1;padding:9px 4px;background:none;border:none;color:var(--dim);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;font-size:.65rem;font-weight:500;transition:color .2s;-webkit-tap-highlight-color:transparent}
 .nbtn.on{color:var(--accent)}
 .nbtn svg{width:21px;height:21px}
-.page{padding-bottom:72px}
+.page{padding-bottom:130px}
 .tab{display:none}
 .tab.on{display:block}
 .inner{padding:14px;max-width:700px;margin:0 auto}
@@ -36,23 +42,23 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .ctitle{font-size:.72rem;color:var(--dim);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px}
 .btn{padding:10px 18px;border-radius:8px;border:none;cursor:pointer;font-size:.9rem;font-weight:600;transition:all .15s;-webkit-tap-highlight-color:transparent}
 .btn:active{transform:scale(.97)}
-.pri{background:var(--accent);color:#1a1a1a}.pri:hover{background:#f5d08a}
-.sec{background:rgba(255,255,255,.1);color:var(--text)}.sec:hover{background:rgba(255,255,255,.15)}
+.pri{background:var(--accent);color:#fff}.pri:hover{background:#ef4444}
+.sec{background:rgba(0,0,0,.07);color:var(--text)}.sec:hover{background:rgba(0,0,0,.12)}
 .suc{background:var(--ok);color:#fff}
 .dan{background:var(--err);color:#fff}
 .sm{padding:7px 14px;font-size:.82rem}
-.tbar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(226,185,106,.08);border:1px solid rgba(226,185,106,.22);border-radius:10px;margin-bottom:6px}
+.tbar{display:flex;justify-content:space-between;align-items:center;padding:12px 16px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.22);border-radius:10px;margin-bottom:6px}
 .tv{font-size:1.9rem;font-weight:700;color:var(--accent);line-height:1}
 .tl{font-size:.72rem;color:var(--dim);margin-bottom:3px}
 .mstats{display:flex;gap:6px;margin-bottom:10px}
-.mstat{flex:1;min-width:0;background:rgba(255,255,255,.05);border-radius:8px;padding:7px 6px;text-align:center}
+.mstat{flex:1;min-width:0;background:rgba(0,0,0,.05);border-radius:8px;padding:7px 6px;text-align:center}
 .mstat-val{font-size:1rem;font-weight:700;color:var(--accent)}
 .mstat-lbl{font-size:.6rem;color:var(--dim);margin-top:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.tgt-wrap{display:flex;justify-content:center;margin:4px 0}
+.tgt-wrap{display:flex;justify-content:center;margin:4px 0;overflow:hidden;border-radius:8px;touch-action:none}
 #tsvg{width:100%;max-width:280px;height:auto;cursor:crosshair;filter:drop-shadow(0 4px 14px rgba(0,0,0,.6));touch-action:none}
 .pstatus{font-size:.73rem;color:var(--dim);text-align:center;padding:4px 0}
-.zoom-btn{background:rgba(226,185,106,.15);border:1px solid rgba(226,185,106,.3);color:var(--accent);padding:5px 10px;border-radius:7px;cursor:pointer;font-size:.78rem;font-weight:600;display:flex;align-items:center;gap:4px;transition:background .15s;-webkit-tap-highlight-color:transparent}
-.zoom-btn:hover,.zoom-btn:active{background:rgba(226,185,106,.3)}
+.zoom-btn{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.25);color:var(--accent);padding:5px 10px;border-radius:7px;cursor:pointer;font-size:.78rem;font-weight:600;display:flex;align-items:center;gap:4px;transition:background .15s;-webkit-tap-highlight-color:transparent}
+.zoom-btn:hover,.zoom-btn:active{background:rgba(220,38,38,.25)}
 #tmodal{display:none;position:fixed;inset:0;background:#000;z-index:250;flex-direction:column;align-items:center;justify-content:center}
 #tmodal.on{display:flex}
 .tmodal-bar{width:100%;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;background:rgba(15,52,96,.9);position:absolute;top:0;left:0;z-index:2}
@@ -66,50 +72,48 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .tmodal-footer{position:absolute;bottom:calc(env(safe-area-inset-bottom)+8px);left:0;right:0;text-align:center;font-size:.75rem;color:var(--dim);padding:8px}
 @keyframes flash{0%{opacity:1}50%{opacity:.4}100%{opacity:1}}
 .slots{display:flex;gap:6px;justify-content:center;margin:6px 0;flex-wrap:wrap}
-.slot{width:42px;height:42px;border-radius:8px;border:2px solid rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;font-size:.95rem;font-weight:700;cursor:pointer;transition:all .2s;position:relative;flex-shrink:0;-webkit-tap-highlight-color:transparent}
-.slot.cur{border-color:var(--accent);box-shadow:0 0 10px rgba(226,185,106,.45)}
-.slot.empty{opacity:.3}
+.slot{width:22px;height:22px;border-radius:4px;border:1.5px solid rgba(0,0,0,.15);display:flex;align-items:center;justify-content:center;font-size:.62rem;font-weight:700;cursor:pointer;transition:all .2s;position:relative;flex-shrink:0;-webkit-tap-highlight-color:transparent;background:rgba(0,0,0,.04)}
+.slot.cur{border-color:var(--accent);box-shadow:0 0 6px rgba(192,57,43,.35);background:rgba(192,57,43,.07)}
+.slot.empty{opacity:.25}
 .slot.filled:hover,.slot.filled:active{filter:brightness(.7);border-color:var(--err)!important}
 .slot-del-hint{font-size:.68rem;color:var(--dim);text-align:center;margin-top:2px}
 .slot-menu{position:fixed;z-index:400;background:#1a2744;border:1px solid rgba(255,255,255,.2);border-radius:10px;padding:6px;box-shadow:0 8px 24px rgba(0,0,0,.6);min-width:140px}
 .slot-menu-item{padding:10px 14px;border-radius:7px;cursor:pointer;font-size:.88rem;display:flex;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent}
 .slot-menu-item:hover,.slot-menu-item:active{background:rgba(255,255,255,.08)}
 .slot-menu-item.danger{color:var(--err)}
-.sbns{display:grid;gap:6px;margin:8px 0}
-.sbns.recurve{grid-template-columns:repeat(6,1fr)}
-.sbns.compound{grid-template-columns:repeat(4,1fr)}
-.sbn{padding:12px 4px;border-radius:8px;border:none;cursor:pointer;font-size:1rem;font-weight:700;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.sbns{display:grid;gap:5px;margin:4px 0;grid-template-columns:repeat(3,1fr)}
+.sbn{padding:9px 4px;border-radius:7px;border:none;cursor:pointer;font-size:.9rem;font-weight:700;transition:all .15s;-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 .sbn:active{transform:scale(.92)}
 .sbn:hover{filter:brightness(1.12)}
-.erow{display:flex;align-items:center;padding:7px 8px;border-radius:6px;margin-bottom:3px;background:rgba(255,255,255,.04);font-size:.8rem;gap:5px}
+.erow{display:flex;align-items:center;padding:7px 8px;border-radius:6px;margin-bottom:3px;background:rgba(0,0,0,.04);font-size:.8rem;gap:5px}
 .enum{color:var(--dim);min-width:26px;font-size:.75rem}
 .earr{display:flex;gap:3px;flex:1;flex-wrap:wrap}
 .ebdg{min-width:21px;height:21px;border-radius:4px;display:flex;align-items:center;justify-content:center;font-size:.7rem;font-weight:700}
 .etot{font-weight:700;min-width:28px;text-align:right;color:var(--accent)}
 .sgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sitem{background:rgba(255,255,255,.05);border-radius:8px;padding:12px;text-align:center}
+.sitem{background:rgba(0,0,0,.05);border-radius:8px;padding:12px;text-align:center}
 .sval{font-size:1.75rem;font-weight:700;color:var(--accent)}
 .slbl{font-size:.72rem;color:var(--dim);margin-top:3px}
 .zbar{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:.82rem}
 .zlbl{min-width:20px;text-align:right;font-weight:700}
-.ztrack{flex:1;height:15px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden}
+.ztrack{flex:1;height:15px;background:rgba(0,0,0,.08);border-radius:4px;overflow:hidden}
 .zfill{height:100%;border-radius:4px;transition:width .5s}
 .zcnt{min-width:30px;text-align:right;color:var(--dim)}
 .fg{margin-bottom:12px}
 .fl{display:block;font-size:.82rem;color:var(--dim);margin-bottom:5px}
-.fi{width:100%;padding:10px 12px;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.18);border-radius:8px;color:var(--text);font-size:.92rem}
+.fi{width:100%;padding:10px 12px;background:rgba(255,255,255,.7);border:1px solid rgba(140,100,50,.25);border-radius:8px;color:var(--text);font-size:.92rem}
 .fi:focus{outline:none;border-color:var(--accent)}
-select.fi option{background:#1a1a2e}
+select.fi option{background:#FDF7EF;color:#2C1B0E}
 .bow-row{display:flex;gap:8px}
-.bow-btn{flex:1;padding:10px 8px;border-radius:8px;border:1px solid rgba(255,255,255,.2);background:rgba(255,255,255,.07);color:var(--dim);cursor:pointer;font-size:.9rem;font-weight:600;transition:all .15s;-webkit-tap-highlight-color:transparent;text-align:center}
-.bow-btn:hover{background:rgba(255,255,255,.12)}
-.bow-btn.on{background:rgba(226,185,106,.2);border-color:var(--accent);color:var(--accent)}
+.bow-btn{flex:1;padding:10px 8px;border-radius:8px;border:1px solid rgba(140,100,50,.2);background:rgba(0,0,0,.05);color:var(--dim);cursor:pointer;font-size:.9rem;font-weight:600;transition:all .15s;-webkit-tap-highlight-color:transparent;text-align:center}
+.bow-btn:hover{background:rgba(0,0,0,.09)}
+.bow-btn.on{background:rgba(220,38,38,.15);border-color:var(--accent);color:var(--accent)}
 .wx-row{display:flex;gap:5px;flex-wrap:wrap}
-.wx-btn{padding:7px 10px;border-radius:8px;border:1px solid rgba(255,255,255,.15);background:rgba(255,255,255,.07);color:var(--text);cursor:pointer;font-size:.82rem;transition:all .15s;-webkit-tap-highlight-color:transparent}
-.wx-btn:hover{background:rgba(255,255,255,.12)}
-.wx-btn.on{background:rgba(226,185,106,.2);border-color:var(--accent);color:var(--accent)}
+.wx-btn{padding:7px 10px;border-radius:8px;border:1px solid rgba(140,100,50,.18);background:rgba(0,0,0,.05);color:var(--text);cursor:pointer;font-size:.82rem;transition:all .15s;-webkit-tap-highlight-color:transparent}
+.wx-btn:hover{background:rgba(0,0,0,.09)}
+.wx-btn.on{background:rgba(220,38,38,.15);border-color:var(--accent);color:var(--accent)}
 .star-row{display:flex;gap:6px;margin-top:2px}
-.star{font-size:1.6rem;cursor:pointer;transition:transform .1s;line-height:1;-webkit-tap-highlight-color:transparent;color:rgba(255,255,255,.2)}
+.star{font-size:1.6rem;cursor:pointer;transition:transform .1s;line-height:1;-webkit-tap-highlight-color:transparent;color:rgba(0,0,0,.15)}
 .star:hover{transform:scale(1.15)}
 .star.on{color:#FFD700}
 .modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:200;padding:16px;overflow-y:auto;align-items:flex-start;justify-content:center}
@@ -135,8 +139,8 @@ select.fi option{background:#1a1a2e}
   #score-layout{display:grid;grid-template-columns:340px 1fr;gap:18px;align-items:start;max-width:1100px;margin:0 auto}
   #score-right{display:flex;flex-direction:column;gap:0}
   #tsvg{max-width:320px}
-  .slot{width:52px;height:52px;font-size:1.1rem}
-  .sbn{padding:14px 4px;font-size:1.05rem}
+  .slot{width:28px;height:28px;font-size:.72rem}
+  .sbn{padding:10px 4px;font-size:.95rem}
   #tab-history .inner,#tab-stats .inner{max-width:900px}
   .sgrid{grid-template-columns:repeat(4,1fr)}
   .toast{bottom:auto;top:62px;right:20px;left:auto;transform:none}
@@ -146,10 +150,34 @@ select.fi option{background:#1a1a2e}
   #tsvg{max-width:360px}
 }
 @media(max-width:380px){
-  .sbns.recurve{grid-template-columns:repeat(4,1fr)}
-  .slot{width:36px;height:36px;font-size:.85rem}
+  .sbns.recurve{grid-template-columns:repeat(3,1fr)}
+  .slot{width:18px;height:18px;font-size:.58rem}
   .tv{font-size:1.5rem}
 }
+.stepbar{display:flex;gap:8px;justify-content:center;margin-bottom:14px}
+.stepdot{flex:1;max-width:50px;height:4px;border-radius:2px;background:rgba(255,255,255,.15);transition:background .3s}
+.stepdot.on{background:var(--accent)}
+.match-hdr{display:flex;justify-content:center;align-items:center;gap:14px;padding:12px 8px;background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:10px;margin-bottom:8px}
+.match-sp-box{text-align:center;min-width:70px}
+.match-sp{font-size:2.4rem;font-weight:700;color:var(--accent);line-height:1}
+.match-sp-lbl{font-size:.68rem;color:var(--dim);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:90px}
+.match-sep-txt{font-size:1.1rem;color:var(--dim);font-weight:700}
+.mend-won{background:rgba(39,174,96,.15)!important}
+.mend-lost{background:rgba(220,38,38,.1)!important}
+.mend-draw{background:rgba(255,255,255,.06)!important}
+.win-banner{padding:10px 14px;text-align:center;font-size:1rem;font-weight:700;border-radius:10px;margin-bottom:6px}
+.win-banner.my{background:rgba(39,174,96,.2);border:1px solid rgba(39,174,96,.35);color:#4caf50}
+.win-banner.opp{background:rgba(220,38,38,.15);border:1px solid rgba(220,38,38,.3);color:var(--err)}
+.win-banner.draw{background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);color:var(--text)}
+.opp-modal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.82);z-index:350;align-items:center;justify-content:center}
+.opp-modal.on{display:flex}
+.opp-mc{background:var(--card2);border-radius:16px;padding:24px 20px;width:88%;max-width:340px;text-align:center}
+.opp-title{font-size:1rem;font-weight:700;color:var(--accent);margin-bottom:4px}
+.opp-sub{font-size:.82rem;color:var(--dim);margin-bottom:14px}
+.opp-inp{width:100%;font-size:2.4rem;font-weight:700;text-align:center;padding:10px;background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.15);border-radius:10px;color:var(--text);margin-bottom:14px}
+.opp-inp:focus{outline:none;border-color:var(--accent)}
+.daily-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:8px;font-size:.8rem;color:var(--dim)}
+.daily-val{color:var(--accent);font-weight:700;font-size:.95rem}
 </style>
 </head>
 <body>
@@ -202,14 +230,25 @@ select.fi option{background:#1a1a2e}
             <div style="text-align:center"><div class="tl">本輪</div><div style="font-size:1.25rem;font-weight:700" id="tendtot">—</div></div>
             <div style="text-align:right"><div class="tl">輪均分</div><div style="font-size:1rem;font-weight:700;color:var(--dim)" id="tavg">—</div></div>
           </div>
+          <div class="daily-bar"><span>今日總箭量</span><span class="daily-val" id="daily-count">0</span></div>
           <div class="mstats" id="mstats"></div>
+          <div id="match-hdr-wrap" style="display:none">
+            <div class="match-hdr">
+              <div class="match-sp-box">
+                <div class="match-sp" id="match-my-sp">0</div>
+                <div class="match-sp-lbl" id="match-my-name">我方</div>
+              </div>
+              <div class="match-sep-txt">vs</div>
+              <div class="match-sp-box">
+                <div class="match-sp" id="match-opp-sp">0</div>
+                <div class="match-sp-lbl" id="match-opp-name">對手</div>
+              </div>
+            </div>
+            <div id="match-win-banner" class="win-banner" style="display:none"></div>
+          </div>
           <div class="card" style="padding:12px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-              <span class="ctitle" style="margin:0">靶面 · 點擊記錄落點</span>
-              <button class="zoom-btn" onclick="openTargetModal()">
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M15 3h6v6h-2V5h-4V3zM9 3H3v6h2V5h4V3zm6 18v-2h4v-4h2v6h-6zm-6 0H3v-6h2v4h4v2z"/></svg>
-                放大靶面
-              </button>
+            <div style="margin-bottom:6px">
+              <span class="ctitle" style="margin:0">靶面 · 點擊記錄 ｜ 雙指放大</span>
             </div>
             <div class="tgt-wrap">
               <svg id="tsvg" viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg">
@@ -222,25 +261,15 @@ select.fi option{background:#1a1a2e}
         </div>
 
         <div id="score-right">
-          <div class="card" style="padding:12px 14px">
-            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px">
-              <span class="ctitle" style="margin:0">本輪箭矢</span>
-              <div style="display:flex;gap:6px">
-                <button class="clear-btn" onclick="clearEnd()">清空本輪</button>
-                <button class="undo-btn" onclick="undoLast()">↩</button>
-              </div>
-            </div>
-            <div class="slot-del-hint">點擊已記錄的箭矢可個別刪除</div>
-            <div id="slots" class="slots" style="margin-top:6px"></div>
-          </div>
-          <div class="card" style="padding:12px 14px">
-            <div class="ctitle">手動輸入分數（無落點記錄）</div>
-            <div class="sbns" id="sbns"></div>
-            <button class="btn suc" style="width:100%;margin-top:10px;padding:12px" id="finbtn" onclick="finishEnd()" disabled>完成此輪 →</button>
-          </div>
+          <div id="slots" style="display:none"></div>
           <div class="card">
             <div class="ctitle">本場次輪次記錄</div>
             <div id="ehlist"></div>
+          </div>
+          <div class="card" style="padding:8px 10px">
+            <div class="ctitle" style="font-size:.72rem;margin-bottom:6px">手動輸入分數（無落點記錄）</div>
+            <div class="sbns" id="sbns"></div>
+            <button class="btn suc" style="width:100%;margin-top:7px;padding:9px;font-size:.85rem" id="finbtn" onclick="finishEnd()" disabled>完成此輪 →</button>
           </div>
           <div class="flex gap8" style="margin-bottom:10px">
             <button class="btn sec" style="flex:1;padding:11px" onclick="confirmFinish()">完成場次並儲存</button>
@@ -292,7 +321,8 @@ select.fi option{background:#1a1a2e}
     </div>
     <div class="tmodal-btns">
       <button class="tmodal-zoom-reset" onclick="resetZoom()" id="zoom-reset-btn" style="display:none">重置縮放</button>
-      <button class="tmodal-close" onclick="closeTargetModal()">✕</button>
+      <button class="tmodal-zoom-reset" onclick="undoLastFromBig()" id="tmodal-undo-btn">↩ 刪除前一個</button>
+      <button class="tmodal-close" onclick="closeTargetModal()" style="width:auto;padding:0 14px;border-radius:20px;font-size:.85rem">返回</button>
     </div>
   </div>
   <div id="tsvg-big-wrap">
@@ -301,7 +331,6 @@ select.fi option{background:#1a1a2e}
       <g id="markers-big"></g>
     </svg>
   </div>
-  <div class="tmodal-footer">雙指縮放 · 放大後可拖曳 · 全部箭矢記錄完自動關閉</div>
 </div>
 
 <div id="slot-menu" class="slot-menu" style="display:none">
@@ -313,75 +342,108 @@ select.fi option{background:#1a1a2e}
 <div id="newmodal" class="modal" onclick="if(event.target===this)closeNew()">
   <div class="mc">
     <div class="mt">新增計分場次</div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
-      <div class="fg" style="grid-column:1/-1">
+    <div class="stepbar"><div class="stepdot on" id="sdot1"></div><div class="stepdot" id="sdot2"></div></div>
+
+    <!-- Step 1 -->
+    <div id="fstep1">
+      <div class="fg">
         <label class="fl">弓種</label>
         <div class="bow-row">
           <button class="bow-btn on" id="bow-recurve" onclick="setBowType('recurve',this)">🏹 反曲弓</button>
           <button class="bow-btn" id="bow-compound" onclick="setBowType('compound',this)">⚙️ 複合弓</button>
         </div>
       </div>
-      <div class="fg" style="grid-column:1/-1"><label class="fl">選手姓名</label><input type="text" class="fi" id="i-archer" placeholder="請輸入姓名"></div>
-      <div class="fg"><label class="fl">日期</label><input type="date" class="fi" id="i-date"></div>
-      <div class="fg"><label class="fl">時間</label><input type="time" class="fi" id="i-time"></div>
+      <div class="fg"><label class="fl">選手姓名</label><input type="text" class="fi" id="i-archer" placeholder="請輸入姓名"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+        <div class="fg"><label class="fl">日期</label><input type="date" class="fi" id="i-date"></div>
+        <div class="fg"><label class="fl">時間</label><input type="time" class="fi" id="i-time"></div>
+      </div>
       <div class="fg">
-        <label class="fl">射距</label>
-        <select class="fi" id="i-dist">
-          <option value="18m">18m（室內）</option>
-          <option value="30m">30m</option>
-          <option value="50m">50m</option>
-          <option value="60m">60m</option>
-          <option value="70m" selected>70m（奧運）</option>
-          <option value="90m">90m</option>
+        <label class="fl">練習類型</label>
+        <select class="fi" id="i-sessiontype" onchange="onSessionTypeChange()">
+          <option value="自主練習">🏃 自主練習</option>
+          <option value="個人測驗">🎯 個人測驗</option>
+          <option value="團體測驗">👥 團體測驗</option>
+          <option value="個人對抗賽">⚔️ 個人對抗賽</option>
+          <option value="團體對抗賽">🏆 團體對抗賽</option>
+          <option value="混雙對抗賽">🤝 混雙對抗賽</option>
         </select>
       </div>
-      <div class="fg">
-        <label class="fl">靶面</label>
-        <select class="fi" id="i-face">
-          <option value="40cm">40cm</option>
-          <option value="60cm">60cm</option>
-          <option value="80cm">80cm</option>
-          <option value="122cm" selected>122cm</option>
-        </select>
+      <div class="fg" id="opp-name-grp" style="display:none">
+        <label class="fl">對手 / 對方隊伍名稱</label>
+        <input type="text" class="fi" id="i-opponent" placeholder="例：台中市隊、李○○">
+      </div>
+      <div class="flex gap8 mt8">
+        <button class="btn sec" style="flex:1" onclick="closeNew()">取消</button>
+        <button class="btn pri" style="flex:1" onclick="goFormStep2()">下一步 →</button>
+      </div>
+    </div>
+
+    <!-- Step 2 -->
+    <div id="fstep2" style="display:none">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0 12px">
+        <div class="fg">
+          <label class="fl">射距</label>
+          <select class="fi" id="i-dist">
+            <option value="18m">18m（室內）</option>
+            <option value="30m">30m</option>
+            <option value="50m">50m</option>
+            <option value="60m">60m</option>
+            <option value="70m" selected>70m（奧運）</option>
+            <option value="90m">90m</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">靶面</label>
+          <select class="fi" id="i-face">
+            <option value="40cm">40cm</option>
+            <option value="60cm">60cm</option>
+            <option value="80cm">80cm</option>
+            <option value="122cm" selected>122cm</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">箭型號</label>
+          <select class="fi" id="i-arrowmodel">
+            <option value="">未選擇</option>
+            <option value="Performa">Performa</option>
+            <option value="Paragon">Paragon</option>
+            <option value="Brixxon">Brixxon</option>
+            <option value="ACE">ACE</option>
+            <option value="X10">X10</option>
+          </select>
+        </div>
+        <div class="fg">
+          <label class="fl">箭規格</label>
+          <input type="text" class="fi" id="i-arrowsize" placeholder="例：400、1000...">
+        </div>
+        <div class="fg" id="ape-grp">
+          <label class="fl">每輪箭數</label>
+          <select class="fi" id="i-ape">
+            <option value="3">3箭/輪</option>
+            <option value="6" selected>6箭/輪</option>
+          </select>
+        </div>
+        <div class="fg" id="ends-grp">
+          <label class="fl">輪數</label>
+          <select class="fi" id="i-ends" onchange="toggleCustomEnds(this)">
+            <option value="6">6輪</option>
+            <option value="10">10輪</option>
+            <option value="12" selected>12輪（720分）</option>
+            <option value="20">20輪（1440分）</option>
+            <option value="0">自定義</option>
+          </select>
+        </div>
+        <div class="fg" id="customEndsGrp" style="display:none;grid-column:1/-1">
+          <label class="fl">自定義輪數</label>
+          <input type="number" class="fi" id="i-customends" min="1" max="99" value="12">
+        </div>
+        <div class="fg" id="match-info-grp" style="display:none;grid-column:1/-1">
+          <div style="background:rgba(220,38,38,.08);border:1px solid rgba(220,38,38,.2);border-radius:8px;padding:10px;font-size:.82rem;color:var(--dim);line-height:1.5" id="match-info-txt"></div>
+        </div>
       </div>
       <div class="fg">
-        <label class="fl">箭型號</label>
-        <select class="fi" id="i-arrowmodel">
-          <option value="">未選擇</option>
-          <option value="Performa">Performa</option>
-          <option value="Paragon">Paragon</option>
-          <option value="Brixxon">Brixxon</option>
-          <option value="ACE">ACE</option>
-          <option value="X10">X10</option>
-        </select>
-      </div>
-      <div class="fg">
-        <label class="fl">箭規格</label>
-        <input type="text" class="fi" id="i-arrowsize" placeholder="例：400、1000...">
-      </div>
-      <div class="fg">
-        <label class="fl">每輪箭數</label>
-        <select class="fi" id="i-ape">
-          <option value="3">3箭/輪</option>
-          <option value="6" selected>6箭/輪</option>
-        </select>
-      </div>
-      <div class="fg">
-        <label class="fl">輪數</label>
-        <select class="fi" id="i-ends" onchange="toggleCustomEnds(this)">
-          <option value="6">6輪</option>
-          <option value="10">10輪</option>
-          <option value="12" selected>12輪（720分）</option>
-          <option value="20">20輪（1440分）</option>
-          <option value="0">自定義</option>
-        </select>
-      </div>
-      <div class="fg" id="customEndsGrp" style="display:none;grid-column:1/-1">
-        <label class="fl">自定義輪數</label>
-        <input type="number" class="fi" id="i-customends" min="1" max="99" value="12">
-      </div>
-      <div class="fg" style="grid-column:1/-1">
-        <label class="fl">天氣</label>
+        <label class="fl">天氣（可複選）</label>
         <div class="wx-row" id="wx-row">
           <button class="wx-btn on" onclick="setWx(this,'☀️ 晴天')">☀️ 晴天</button>
           <button class="wx-btn" onclick="setWx(this,'⛅ 多雲')">⛅ 多雲</button>
@@ -391,7 +453,7 @@ select.fi option{background:#1a1a2e}
           <button class="wx-btn" onclick="setWx(this,'🌧️ 下雨')">🌧️ 下雨</button>
         </div>
       </div>
-      <div class="fg" style="grid-column:1/-1">
+      <div class="fg">
         <label class="fl">身體狀態（1–5 分）</label>
         <div class="star-row" id="body-stars">
           <span class="star" onclick="setBody(1)">★</span>
@@ -401,17 +463,36 @@ select.fi option{background:#1a1a2e}
           <span class="star" onclick="setBody(5)">★</span>
         </div>
       </div>
-      <div class="fg" style="grid-column:1/-1"><label class="fl">備註</label><input type="text" class="fi" id="i-notes" placeholder="例：選拔賽、自主練習..."></div>
+      <div class="fg"><label class="fl">備註</label><input type="text" class="fi" id="i-notes" placeholder="例：選拔賽、自主練習..."></div>
+      <div class="flex gap8 mt8">
+        <button class="btn sec" style="flex:1" onclick="goFormStep1()">← 返回</button>
+        <button class="btn pri" style="flex:1" onclick="createSession()">開始計分</button>
+      </div>
     </div>
-    <div class="flex gap8 mt8">
-      <button class="btn sec" style="flex:1" onclick="closeNew()">取消</button>
-      <button class="btn pri" style="flex:1" onclick="createSession()">開始計分</button>
+  </div>
+</div>
+
+<div id="opp-modal" class="opp-modal">
+  <div class="opp-mc">
+    <div class="opp-title">輸入對手成績</div>
+    <div class="opp-sub" id="opp-sub-text"></div>
+    <input type="number" class="opp-inp" id="opp-score-inp" min="0" max="999" inputmode="numeric" placeholder="0">
+    <div style="display:flex;gap:8px">
+      <button class="btn sec" style="flex:1" onclick="cancelOppScore()">取消本輪</button>
+      <button class="btn pri" style="flex:1" onclick="confirmOppScore()">確認</button>
     </div>
   </div>
 </div>
 
 <div id="detailmodal" class="modal" onclick="if(event.target===this)closeDetail()">
   <div class="mc" style="max-width:580px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <button class="btn sec sm" onclick="closeDetail()" style="padding:6px 14px;font-size:.85rem">← 返回</button>
+      <div style="display:flex;gap:8px">
+        <button class="btn pri sm" id="dm-export2" style="font-size:.82rem">匯出</button>
+        <button class="btn dan sm" id="dm-del2" style="font-size:.82rem">刪除</button>
+      </div>
+    </div>
     <div class="mt" id="dm-title"></div>
     <div id="dm-content"></div>
     <div class="flex gap8 mt12">
@@ -437,12 +518,14 @@ const COL = {
   1:{bg:'#eee',fg:'#222'},    M:{bg:'#555',fg:'#ccc'},
 };
 
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbyspwr6WX2rdP3ruuq2QZEtqdGGHqQ4nEETTJKrJgoL2n8psPtvYd9MpH7-NRNvdcOt/exec';
+
 let S = { sessions:[], cur:null, end:{arrows:[]} };
-let selectedWx = '☀️ 晴天';
+let selectedWx = ['☀️ 晴天'];
 let selectedBody = 3;
 let selectedBowType = 'recurve';
 let pendingSlotIndex = -1;
-let selectedEndIndex = -1;
+let pendingEndTot = 0;
 
 function save(){
   localStorage.setItem('asc_s', JSON.stringify(S.sessions));
@@ -463,20 +546,23 @@ function nowTime(){ return new Date().toTimeString().slice(0,5); }
 function starsHTML(n){ return '★'.repeat(n)+'☆'.repeat(5-n); }
 
 function scoreFromDist(d, bowType){
+  // 壓線容許：2 SVG 單位（約手機上 2px），落點中心在環線外 2 單位內算高分
+  const t = 1;
+  const e = Math.max(0, d - t);
   if(bowType==='compound'){
-    if(d<=5)      return 'X';
-    if(d<=23.33)  return '10';
-    if(d<=46.67)  return '9';
-    if(d<=70)     return '8';
-    if(d<=93.33)  return '7';
-    if(d<=116.67) return '6';
-    if(d<=140)    return '5';
+    if(e<=11.67)  return 'X';
+    if(e<=23.33)  return '10';
+    if(e<=46.67)  return '9';
+    if(e<=70)     return '8';
+    if(e<=93.33)  return '7';
+    if(e<=116.67) return '6';
+    if(e<=140)    return '5';
     return 'M';
   }
-  if(d<=5)   return 'X';  if(d<=14)  return '10'; if(d<=28) return '9';
-  if(d<=42)  return '8';  if(d<=56)  return '7';  if(d<=70) return '6';
-  if(d<=84)  return '5';  if(d<=98)  return '4';  if(d<=112)return '3';
-  if(d<=126) return '2';  if(d<=140) return '1';  return 'M';
+  if(e<=7)   return 'X';  if(e<=14)  return '10'; if(e<=28) return '9';
+  if(e<=42)  return '8';  if(e<=56)  return '7';  if(e<=70) return '6';
+  if(e<=84)  return '5';  if(e<=98)  return '4';  if(e<=112)return '3';
+  if(e<=126) return '2';  if(e<=140) return '1';  return 'M';
 }
 
 function isMiss(s, bowType){
@@ -498,23 +584,6 @@ function calcStats(arrows, bowType){
   };
 }
 
-function calcConcentration(arrows){
-  const withCoords=arrows.filter(a=>a.x!==null&&a.y!==null);
-  if(!withCoords.length) return null;
-  const distances=withCoords.map(a=>{const dx=a.x-0.5,dy=a.y-0.5;return Math.sqrt(dx*dx+dy*dy)*100;});
-  distances.sort((a,b)=>a-b);
-  const avgDist=distances.reduce((s,d)=>s+d,0)/distances.length;
-  const cep=distances[Math.floor(distances.length*0.5)];
-  const variance=distances.reduce((s,d)=>s+Math.pow(d-avgDist,2),0)/distances.length;
-  const stdDev=Math.sqrt(variance);
-  return {
-    avgDist: avgDist.toFixed(2),
-    cep: cep.toFixed(2),
-    stdDev: stdDev.toFixed(2),
-    withCoords: withCoords.length
-  };
-}
-
 // ── TARGET SVG CONTENT ──────────────────────────
 function recurveRings(){
   return `
@@ -528,7 +597,8 @@ function recurveRings(){
 <circle cx="150" cy="150" r="42"  fill="#EE2222" stroke="#CC0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="28"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="14"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="2"   fill="none" stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="150" cy="150" r="7"   fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="7"   fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
 <line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
@@ -553,7 +623,8 @@ function compoundRings(){
 <circle cx="150" cy="150" r="70"     fill="#CC0000" stroke="#AA0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="46.67"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="23.33"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="2"      fill="none" stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="150" cy="150" r="11.67"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="11.67"  fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
 <line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
@@ -579,11 +650,175 @@ function setBowType(type, btn){
   selectedBowType = type;
   document.querySelectorAll('.bow-btn').forEach(b=>b.classList.remove('on'));
   btn.classList.add('on');
+  updateStep2ForMatchType();
+}
+function onSessionTypeChange(){
+  const t=document.getElementById('i-sessiontype').value;
+  document.getElementById('opp-name-grp').style.display=isMatchPlayType(t)?'block':'none';
+}
+function goFormStep2(){
+  if(!document.getElementById('i-archer').value.trim()){ toast('請先輸入選手姓名'); return; }
+  document.getElementById('fstep1').style.display='none';
+  document.getElementById('fstep2').style.display='block';
+  document.getElementById('sdot2').classList.add('on');
+  updateStep2ForMatchType();
+}
+function goFormStep1(){
+  document.getElementById('fstep1').style.display='block';
+  document.getElementById('fstep2').style.display='none';
+  document.getElementById('sdot2').classList.remove('on');
+}
+function isMatchPlayType(t){ return ['個人對抗賽','團體對抗賽','混雙對抗賽'].includes(t); }
+function isMatchPlay(s){ return isMatchPlayType(s?.sessionType); }
+function getMatchConfig(type, bowType){
+  if(type==='個人對抗賽') return {ape:3, numEnds:5, targetSP:6, useSet:bowType!=='compound'};
+  if(type==='團體對抗賽') return {ape:6, numEnds:4, targetSP:5, useSet:bowType!=='compound'};
+  if(type==='混雙對抗賽') return {ape:4, numEnds:4, targetSP:5, useSet:bowType!=='compound'};
+  return null;
+}
+function updateStep2ForMatchType(){
+  const type=(document.getElementById('i-sessiontype')?.value)||'自主練習';
+  const isComp=isMatchPlayType(type);
+  const el1=document.getElementById('ape-grp'), el2=document.getElementById('ends-grp'), el3=document.getElementById('match-info-grp');
+  if(!el1) return;
+  el1.style.display=isComp?'none':'block';
+  el2.style.display=isComp?'none':'block';
+  el3.style.display=isComp?'block':'none';
+  if(!isComp) return;
+  const infos={
+    '個人對抗賽': selectedBowType==='compound'
+      ? '複合弓個人對抗賽：5輪×3箭，累積得分高者勝；同分→1箭加射，再同分→距靶心近者勝'
+      : '反曲弓個人對抗賽：最多5輪×3箭，局分制（贏+2 平+1 輸+0），先得6局分勝；5:5同分→1箭加射，同分→距靶心近者勝',
+    '團體對抗賽': selectedBowType==='compound'
+      ? '複合弓團體對抗賽：4輪×6箭，累積總分高者勝；同分→每人各1箭加射（全隊3箭），再同分→最佳箭距靶心近者勝'
+      : '反曲弓團體對抗賽：4輪×6箭，局分制（贏+2 平+1 輸+0），先得5局分勝；4:4同分→每人各1箭加射（全隊3箭），同分→最佳箭距靶心近者勝',
+    '混雙對抗賽': selectedBowType==='compound'
+      ? '複合弓混雙對抗賽：4輪×4箭，累積總分高者勝；同分→每人各1箭加射（全隊2箭），再同分→距靶心近者勝'
+      : '反曲弓混雙對抗賽：4輪×4箭，局分制（贏+2 平+1 輸+0），先得5局分勝；4:4同分→每人各1箭加射（全隊2箭），同分→距靶心近者勝'
+  };
+  document.getElementById('match-info-txt').textContent=infos[type]||'';
+}
+function getDailyArrows(){
+  const td=today();
+  const past=S.sessions.filter(s=>s.date===td).flatMap(s=>s.ends).flatMap(e=>e.arrows).length;
+  const cur=S.cur?.date===td?(S.cur.ends.flatMap(e=>e.arrows).length+S.end.arrows.length):0;
+  return past+cur;
+}
+function renderMatchHeader(){
+  const wrap=document.getElementById('match-hdr-wrap'); if(!wrap) return;
+  if(!S.cur||!isMatchPlay(S.cur)){ wrap.style.display='none'; return; }
+  wrap.style.display='block';
+  const ms=S.cur.matchState||{mySP:0,oppSP:0};
+  const cfg=S.cur.matchCfg||getMatchConfig(S.cur.sessionType,S.cur.bowType);
+  const regularEnds=S.cur.ends.filter(e=>!e.isShootoff);
+  if(cfg&&!cfg.useSet){
+    document.getElementById('match-my-sp').textContent=regularEnds.reduce((a,e)=>a+e.tot,0);
+    document.getElementById('match-opp-sp').textContent=regularEnds.reduce((a,e)=>a+(e.oppTot||0),0);
+    document.getElementById('match-my-name').textContent=S.cur.archer||'我方';
+    document.getElementById('match-opp-name').textContent=S.cur.opponent||'對手';
+  } else {
+    document.getElementById('match-my-sp').textContent=ms.mySP;
+    document.getElementById('match-opp-sp').textContent=ms.oppSP;
+    document.getElementById('match-my-name').textContent=(S.cur.archer||'我方')+(cfg?` (目標${cfg.targetSP}分)`:'');
+    document.getElementById('match-opp-name').textContent=S.cur.opponent||'對手';
+  }
+  const banner=document.getElementById('match-win-banner');
+  if(ms.result==='my'){
+    banner.style.display='block'; banner.className='win-banner my';
+    banner.textContent=`🏆 ${S.cur.archer||'我方'} 獲勝！`;
+  } else if(ms.result==='opp'){
+    banner.style.display='block'; banner.className='win-banner opp';
+    banner.textContent=`${S.cur.opponent||'對手'} 獲勝`;
+  } else if(ms.result==='shootoff'){
+    banner.style.display='block'; banner.className='win-banner draw';
+    const rnd=ms.shootoffRound||1;
+    banner.textContent=`⚡ 同分加射 第${rnd}輪（${ms.inShootoff?'加射中...':'準備加射'})`;
+  } else if(ms.result==='shootoff_distance'){
+    banner.style.display='block'; banner.className='win-banner draw';
+    banner.innerHTML=`完全同分！請比較距靶心距離：
+      <div style="display:flex;gap:8px;justify-content:center;margin-top:8px">
+        <button class="btn suc sm" onclick="setShootoffWinner('my')">我方較近</button>
+        <button class="btn dan sm" onclick="setShootoffWinner('opp')">對方較近</button>
+      </div>`;
+  } else {
+    banner.style.display='none';
+  }
+}
+function setShootoffWinner(who){
+  if(!S.cur) return;
+  S.cur.matchState.result=who;
+  save(); renderScore();
+  toast(who==='my'?`🏆 ${S.cur.archer||'我方'}獲勝（靶心距離）`:`${S.cur.opponent||'對手'}獲勝（靶心距離）`);
+}
+function triggerShootoff(c, cfg){
+  c.matchState.result='shootoff';
+  c.matchState.shootoffRound=(c.matchState.shootoffRound||0)+1;
+  c.matchState.inShootoff=true;
+  // 加射箭數：個人1箭、混雙2箭（每人1）、團體3箭（每人1）
+  c.ape = c.sessionType==='個人對抗賽' ? 1 : c.sessionType==='混雙對抗賽' ? 2 : 3;
+}
+function confirmOppScore(){
+  const v=parseInt(document.getElementById('opp-score-inp').value);
+  if(isNaN(v)||v<0){ toast('請輸入有效分數'); return; }
+  document.getElementById('opp-modal').classList.remove('on');
+  const myTot=pendingEndTot, c=S.cur;
+  const cfg=c.matchCfg||getMatchConfig(c.sessionType,c.bowType);
+  const isSOEnd=!!(c.matchState?.inShootoff);
+  let mySP=0, oppSP=0;
+
+  if(!isSOEnd && cfg&&cfg.useSet){
+    if(myTot>v) mySP=2;
+    else if(myTot===v){ mySP=1; oppSP=1; }
+    else oppSP=2;
+    c.matchState.mySP+=mySP; c.matchState.oppSP+=oppSP;
+  }
+  c.ends.push({n:c.ends.length+1, arrows:[...S.end.arrows], tot:myTot, oppTot:v, mySP, oppSP, isShootoff:isSOEnd});
+  S.end={arrows:[]};
+
+  if(isSOEnd){
+    // 加射結束判決
+    c.matchState.inShootoff=false;
+    c.ape=cfg?cfg.ape:c.ape; // 還原箭數
+    if(myTot>v) c.matchState.result='my';
+    else if(myTot<v) c.matchState.result='opp';
+    else c.matchState.result='shootoff_distance'; // 再同分→靶心距離
+  } else if(cfg){
+    const regularEnds=c.ends.filter(e=>!e.isShootoff);
+    if(cfg.useSet){
+      if(c.matchState.mySP>=cfg.targetSP) c.matchState.result='my';
+      else if(c.matchState.oppSP>=cfg.targetSP) c.matchState.result='opp';
+      else if(regularEnds.length>=c.numEnds){
+        // 正規輪次全部完成，同局分→加射
+        if(c.matchState.mySP===c.matchState.oppSP) triggerShootoff(c,cfg);
+        else c.matchState.result=c.matchState.mySP>c.matchState.oppSP?'my':'opp';
+      }
+    } else {
+      if(regularEnds.length>=c.numEnds){
+        const mt=regularEnds.reduce((a,e)=>a+e.tot,0), ot=regularEnds.reduce((a,e)=>a+(e.oppTot||0),0);
+        if(mt>ot) c.matchState.result='my';
+        else if(mt<ot) c.matchState.result='opp';
+        else triggerShootoff(c,cfg);
+      }
+    }
+  }
+
+  save(); renderScore();
+  const res=c.matchState?.result;
+  if(res==='my') toast(`🏆 ${c.archer||'我方'}獲勝！`);
+  else if(res==='opp') toast(`${c.opponent||'對手'}獲勝`);
+  else if(res==='shootoff') toast(`同分！進行加射 第${c.matchState.shootoffRound}輪`);
+  else if(res==='shootoff_distance') toast('加射同分！請比較靶心距離');
+  else toast(`第${c.ends.filter(e=>!e.isShootoff).length}輪完成 · 我方${myTot} 對手${v}`+(cfg?.useSet?` · 局分 ${c.matchState.mySP}:${c.matchState.oppSP}`:''));
+}
+function cancelOppScore(){
+  document.getElementById('opp-modal').classList.remove('on');
+  S.end={arrows:[]}; save(); renderScore(); toast('本輪已取消');
 }
 function setWx(btn, val){
-  selectedWx = val;
-  document.querySelectorAll('.wx-btn').forEach(b=>b.classList.remove('on'));
-  btn.classList.add('on');
+  const idx=selectedWx.indexOf(val);
+  if(idx>=0) selectedWx.splice(idx,1);
+  else selectedWx.push(val);
+  btn.classList.toggle('on', selectedWx.includes(val));
 }
 function setBody(v){
   selectedBody = v;
@@ -591,18 +826,26 @@ function setBody(v){
 }
 function initForm(){
   setBody(3);
-  document.querySelectorAll('.wx-btn').forEach((b,i)=>b.classList.toggle('on',i===0));
-  selectedWx='☀️ 晴天';
+  selectedWx=['☀️ 晴天'];
+  document.querySelectorAll('.wx-btn').forEach(b=>b.classList.toggle('on', selectedWx.includes(b.textContent.trim())));
   selectedBowType='recurve';
   document.getElementById('bow-recurve').classList.add('on');
   document.getElementById('bow-compound').classList.remove('on');
   document.getElementById('i-arrowmodel').value='';
   document.getElementById('i-arrowsize').value='';
+  document.getElementById('i-sessiontype').value='自主練習';
+  document.getElementById('opp-name-grp').style.display='none';
+  goFormStep1();
 }
 
 // ── SESSION ──────────────────────────────────────
 function createSession(){
+  const type=document.getElementById('i-sessiontype').value;
+  const isComp=isMatchPlayType(type);
+  const cfg=isComp?getMatchConfig(type,selectedBowType):null;
   const eSel=document.getElementById('i-ends').value;
+  const ape=cfg?cfg.ape:parseInt(document.getElementById('i-ape').value);
+  const numEnds=cfg?cfg.numEnds:(eSel==='0'?(parseInt(document.getElementById('i-customends').value)||12):parseInt(eSel));
   S.cur={
     id: Date.now()+'',
     bowType:    selectedBowType,
@@ -613,9 +856,12 @@ function createSession(){
     face:       document.getElementById('i-face').value,
     arrowModel: document.getElementById('i-arrowmodel').value,
     arrowSize:  document.getElementById('i-arrowsize').value.trim(),
-    ape:        parseInt(document.getElementById('i-ape').value),
-    numEnds:    eSel==='0'?(parseInt(document.getElementById('i-customends').value)||12):parseInt(eSel),
-    weather:    selectedWx,
+    ape, numEnds,
+    sessionType: type,
+    opponent:   isComp?(document.getElementById('i-opponent').value.trim()||'對手'):'',
+    matchState: isComp?{mySP:0,oppSP:0,result:''}:null,
+    matchCfg:   cfg,
+    weather:    selectedWx.join(' '),
     body:       selectedBody,
     notes:      document.getElementById('i-notes').value.trim(),
     ends:[], completed:false
@@ -627,11 +873,30 @@ function createSession(){
 function finishEnd(){
   if(!S.cur||!S.end.arrows.length) return;
   const tot=S.end.arrows.reduce((a,x)=>a+ns(x.s),0);
+  if(isMatchPlay(S.cur)){
+    pendingEndTot=tot;
+    const ms=S.cur.matchState||{};
+    const isSO=ms.inShootoff;
+    const endN=S.cur.ends.filter(e=>!e.isShootoff).length+(isSO?0:1);
+    const label=isSO?`⚡ 加射第${ms.shootoffRound}輪`:`第 ${endN} 輪`;
+    document.getElementById('opp-sub-text').textContent=`${label} · 我方 ${tot} 分（${S.cur.ape}箭）`;
+    document.getElementById('opp-score-inp').value='';
+    document.getElementById('opp-modal').classList.add('on');
+    setTimeout(()=>document.getElementById('opp-score-inp').focus(),300);
+    return;
+  }
   S.cur.ends.push({n:S.cur.ends.length+1, arrows:[...S.end.arrows], tot});
   S.end={arrows:[]};
   save(); renderScore();
   const done=S.cur.ends.length>=S.cur.numEnds;
   toast(done?'所有輪次完成！請點「完成場次並儲存」':`第${S.cur.ends.length}輪完成，得${tot}分`);
+}
+
+function submitToSheet(session){
+  if(!GAS_URL||GAS_URL.includes('YOUR_GAS_URL')) return;
+  fetch(GAS_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain'},body:JSON.stringify(session)})
+    .then(()=>toast('資料已上傳到試算表 ✓'))
+    .catch(()=>toast('資料已存本機，上傳失敗請確認網路'));
 }
 
 function confirmFinish(){
@@ -643,9 +908,11 @@ function confirmFinish(){
   if(!confirm('確定完成場次並儲存？')) return;
   S.cur.completed=true;
   S.sessions.unshift(S.cur);
+  const saved={...S.cur};
   S.cur=null; S.end={arrows:[]};
   save(); renderScore(); renderHistory(); renderStats();
   toast('場次已儲存！'); switchTab('history');
+  submitToSheet(saved);
 }
 
 function confirmAbandon(){
@@ -663,6 +930,8 @@ function addArrow(score, x, y){
   if(ps) ps.textContent = x!==null
     ? `✓ ${score}分，落點 (${(x*100).toFixed(0)}%, ${(y*100).toFixed(0)}%)`
     : `✓ ${score}分（未記錄落點）`;
+  if(S.end.arrows.length>=S.cur.ape)
+    setTimeout(()=>{ if(S.cur&&S.end.arrows.length>=S.cur.ape) finishEnd(); }, 700);
 }
 
 function undoLast(){
@@ -708,19 +977,57 @@ document.addEventListener('DOMContentLoaded', ()=>{
   initForm();
   updateTargetRings('recurve');
 
-  // Small target — Android-safe touch handling
+  // Small target — in-place pinch zoom + tap to record
   const svg=document.getElementById('tsvg');
-  let smSX=0, smSY=0, smMoved=false;
   function hitSmall(cx,cy){
     if(!S.cur||S.end.arrows.length>=S.cur.ape) return;
     const r=svg.getBoundingClientRect();
     const sx=(cx-r.left)*(300/r.width), sy=(cy-r.top)*(300/r.height);
     addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2), S.cur.bowType||'recurve'), sx/300, sy/300);
   }
-  svg.addEventListener('click', e=>{hitSmall(e.clientX,e.clientY);e.stopPropagation();});
-  svg.addEventListener('touchstart', e=>{ smSX=e.touches[0].clientX; smSY=e.touches[0].clientY; smMoved=false; },{passive:true});
-  svg.addEventListener('touchmove', e=>{ if(Math.abs(e.touches[0].clientX-smSX)>12||Math.abs(e.touches[0].clientY-smSY)>12) smMoved=true; },{passive:true});
-  svg.addEventListener('touchend', e=>{ e.preventDefault(); if(!smMoved) hitSmall(smSX, smSY); },{passive:false});
+  const tgtWrap=svg.parentElement;
+  const SZ={scale:1,tx:0,ty:0};
+  function applySmallZoom(){
+    SZ.scale=Math.max(1,Math.min(8,SZ.scale));
+    const m=(SZ.scale-1)*svg.clientWidth/2;
+    SZ.tx=Math.max(-m,Math.min(m,SZ.tx));
+    SZ.ty=Math.max(-m,Math.min(m,SZ.ty));
+    svg.style.transformOrigin='center';
+    svg.style.transform=`translate(${SZ.tx}px,${SZ.ty}px) scale(${SZ.scale})`;
+  }
+  let sTouches=0,sPinchDist=0,sPanX=0,sPanY=0,sDidMove=false,sTapX=0,sTapY=0,sLastTouch=0;
+  tgtWrap.addEventListener('touchstart',e=>{
+    sTouches=e.touches.length;
+    if(sTouches===2){
+      sPinchDist=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+      sDidMove=true;
+    } else {
+      sPanX=e.touches[0].clientX; sPanY=e.touches[0].clientY;
+      sTapX=e.touches[0].clientX; sTapY=e.touches[0].clientY;
+      sDidMove=false;
+    }
+  },{passive:true});
+  tgtWrap.addEventListener('touchmove',e=>{
+    e.preventDefault();
+    if(e.touches.length===2){
+      sDidMove=true;
+      const d=Math.hypot(e.touches[1].clientX-e.touches[0].clientX,e.touches[1].clientY-e.touches[0].clientY);
+      SZ.scale=Math.max(1,Math.min(8,SZ.scale*(d/sPinchDist)));
+      sPinchDist=d; applySmallZoom();
+    } else if(e.touches.length===1&&SZ.scale>1.02){
+      sDidMove=true;
+      SZ.tx+=e.touches[0].clientX-sPanX; SZ.ty+=e.touches[0].clientY-sPanY;
+      sPanX=e.touches[0].clientX; sPanY=e.touches[0].clientY;
+      applySmallZoom();
+    } else if(e.touches.length===1){
+      if(Math.abs(e.touches[0].clientX-sTapX)>12||Math.abs(e.touches[0].clientY-sTapY)>12) sDidMove=true;
+    }
+  },{passive:false});
+  tgtWrap.addEventListener('touchend',e=>{
+    sLastTouch=Date.now();
+    if(!sDidMove&&sTouches===1){ e.preventDefault(); hitSmall(sTapX,sTapY); }
+  },{passive:false});
+  svg.addEventListener('click',e=>{ if(Date.now()-sLastTouch>500) hitSmall(e.clientX,e.clientY); });
 
   // Big target with pinch-zoom
   const wrap=document.getElementById('tsvg-big-wrap');
@@ -740,7 +1047,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
   window.resetZoom=resetZoom;
   function clampZ(){ const m=(Z.scale-1)*parseFloat(bigSvg.style.width||'300')/2; Z.tx=Math.max(-m,Math.min(m,Z.tx)); Z.ty=Math.max(-m,Math.min(m,Z.ty)); }
 
-  let touches=0, pinchDist=0, panX=0, panY=0, didMove=false, tapSX=0, tapSY=0;
+  let touches=0, pinchDist=0, panX=0, panY=0, didMove=false, tapSX=0, tapSY=0, lastBigTouch=0;
 
   wrap.addEventListener('touchstart', e=>{
     touches=e.touches.length;
@@ -774,10 +1081,11 @@ document.addEventListener('DOMContentLoaded', ()=>{
   },{passive:false});
 
   wrap.addEventListener('touchend', e=>{
-    if(!didMove && touches===1) hitBig(tapSX, tapSY);
-  },{passive:true});
+    lastBigTouch=Date.now();
+    if(!didMove && touches===1){ e.preventDefault(); hitBig(tapSX, tapSY); }
+  },{passive:false});
 
-  bigSvg.addEventListener('click', e=>{ hitBig(e.clientX,e.clientY); });
+  bigSvg.addEventListener('click', e=>{ if(Date.now()-lastBigTouch>500) hitBig(e.clientX,e.clientY); });
   wrap.addEventListener('wheel', e=>{ e.preventDefault(); Z.scale=Math.max(1,Math.min(6,Z.scale*(e.deltaY<0?1.12:0.89))); clampZ(); applyZ(); },{passive:false});
 
   function hitBig(cx,cy){
@@ -785,9 +1093,9 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const r=bigSvg.getBoundingClientRect();
     const sx=(cx-r.left)*(300/r.width), sy=(cy-r.top)*(300/r.height);
     if(sx<0||sx>300||sy<0||sy>300) return;
-    addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2), S.cur.bowType||'recurve'), sx/300, sy/300);
+    addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2),S.cur.bowType||'recurve'),sx/300,sy/300);
     renderMarkersBig(); updateBigModalHint();
-    if(S.cur && S.end.arrows.length>=S.cur.ape) setTimeout(closeTargetModal, 700);
+    if(S.cur&&S.end.arrows.length>=S.cur.ape) setTimeout(closeTargetModal,700);
   }
 });
 
@@ -816,13 +1124,18 @@ function renderMarkersBig(){
     const c=COL[a.s];
     h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3.5" fill="${c.bg}" stroke="${c.fg}" stroke-width=".8" opacity=".18"/>`;
   }));
-  S.end.arrows.forEach(a=>{
+  S.end.arrows.forEach((a,i)=>{
     if(a.x===null) return;
-    const c=COL[a.s];
-    h+=`<g><circle cx="${a.x*300}" cy="${a.y*300}" r="7.5" fill="${c.bg}" stroke="${c.fg}" stroke-width="1.8" opacity=".93"/>
-    <text x="${a.x*300}" y="${a.y*300+5}" text-anchor="middle" font-size="7" fill="${c.fg}" font-weight="bold">${a.s}</text></g>`;
+    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="2.5" fill="#27ae60" stroke="none" opacity=".95"/>`;
+    h+=`<text x="${a.x*300}" y="${a.y*300+1.2}" text-anchor="middle" font-size="3.5" fill="#fff" font-weight="bold">${i+1}</text>`;
   });
   g.innerHTML=h;
+}
+
+function undoLastFromBig(){
+  if(!S.end.arrows.length){ toast('沒有可撤銷的箭矢'); return; }
+  S.end.arrows.pop();
+  save(); renderSlots(); renderMarkers(); renderMarkersBig(); updateTotals(); updateFinBtn(); updateBigModalHint();
 }
 
 // ── RENDER SCORE TAB ─────────────────────────────
@@ -836,8 +1149,12 @@ function renderScore(){
   document.getElementById('si-bowtype').textContent=c.bowType==='compound'?'複合弓':'反曲弓';
   document.getElementById('si-endnum').textContent=c.ends.length+1;
   document.getElementById('si-totalends').textContent=c.numEnds;
-  document.getElementById('si-archer').textContent=`${c.archer} · ${c.date} ${c.time||''}`;
+  document.getElementById('si-archer').textContent=isMatchPlay(c)
+    ?`${c.archer} vs ${c.opponent||'對手'} · ${c.date} ${c.time||''}`
+    :`${c.archer} · ${c.date} ${c.time||''}`;
+  const daEl=document.getElementById('daily-count'); if(daEl) daEl.textContent=getDailyArrows();
   const mp=[];
+  if(c.sessionType) mp.push(c.sessionType);
   if(c.weather) mp.push(c.weather);
   if(c.body)    mp.push('體能 '+starsHTML(c.body));
   if(c.arrowModel) mp.push(c.arrowModel+(c.arrowSize?' '+c.arrowSize:''));
@@ -845,14 +1162,14 @@ function renderScore(){
   document.getElementById('si-meta').textContent=mp.join(' · ');
   document.getElementById('hinfo').textContent=`${c.archer}  ${c.dist}  ${c.bowType==='compound'?'複合':'反曲'}  第${c.ends.length+1}/${c.numEnds}輪`;
   updateTargetRings(c.bowType||'recurve');
-  renderScoreBtns(); renderSlots(); renderMarkers(); renderEndsHistory(); updateTotals(); updateFinBtn();
+  renderScoreBtns(); renderSlots(); renderMarkers(); renderEndsHistory(); updateTotals(); updateFinBtn(); renderMatchHeader();
 }
 
 function renderScoreBtns(){
   if(!S.cur) return;
   const isC=S.cur.bowType==='compound';
   const el=document.getElementById('sbns');
-  el.className='sbns '+(isC?'compound':'recurve');
+  el.className='sbns';
   el.innerHTML=(isC?SC_COMPOUND:SC_RECURVE).map(s=>{
     const c=COL[s];
     return`<button class="sbn" style="background:${c.bg};color:${c.fg}" onclick="addArrow('${s}',null,null)">${s}</button>`;
@@ -860,56 +1177,82 @@ function renderScoreBtns(){
 }
 
 function renderSlots(){
-  if(!S.cur) return;
-  let h='';
-  for(let i=0;i<S.cur.ape;i++){
-    const a=S.end.arrows[i], cur=!a&&i===S.end.arrows.length;
-    if(a){
-      const c=COL[a.s];
-      const dot=a.x!==null?'<span style="position:absolute;bottom:2px;right:3px;font-size:.42rem;opacity:.8">●</span>':'';
-      h+=`<div class="slot filled" style="background:${c.bg};color:${c.fg};border-color:${c.bg}" onclick="openSlotMenu(${i},event)">${a.s}${dot}</div>`;
-    } else {
-      h+=`<div class="slot ${cur?'cur':'empty'}">${cur?i+1:''}</div>`;
-    }
-  }
-  document.getElementById('slots').innerHTML=h;
+  renderEndsHistory();
 }
 
 function renderMarkers(){
   const g=document.getElementById('markers'); if(!g) return;
   let h='';
-  if(S.cur) S.cur.ends.forEach((e,idx)=>e.arrows.forEach(a=>{
-    if(a.x===null) return;
-    if(idx===selectedEndIndex){
-      h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="4" fill="none" stroke="#4CFF00" stroke-width="1.2"/>`;
-    }else{
-      const c=COL[a.s];
-      h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3" fill="${c.bg}" stroke="${c.fg}" stroke-width=".8" opacity=".2"/>`;
-    }
-  }));
-  S.end.arrows.forEach(a=>{
+  if(S.cur) S.cur.ends.forEach(e=>e.arrows.forEach(a=>{
     if(a.x===null) return;
     const c=COL[a.s];
-    h+=`<g><circle cx="${a.x*300}" cy="${a.y*300}" r="6" fill="${c.bg}" stroke="${c.fg}" stroke-width="1.5" opacity=".95"/>
-    <text x="${a.x*300}" y="${a.y*300+3.8}" text-anchor="middle" font-size="5.5" fill="${c.fg}" font-weight="bold">${a.s}</text></g>`;
+    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="3" fill="${c.bg}" stroke="${c.fg}" stroke-width=".8" opacity=".2"/>`;
+  }));
+  S.end.arrows.forEach((a,i)=>{
+    if(a.x===null) return;
+    h+=`<circle cx="${a.x*300}" cy="${a.y*300}" r="2.5" fill="#27ae60" stroke="none" opacity=".95"/>`;
+    h+=`<text x="${a.x*300}" y="${a.y*300+0.8}" text-anchor="middle" font-size="2.2" fill="#fff" font-weight="bold">${i+1}</text>`;
   });
   g.innerHTML=h;
 }
 
 function renderEndsHistory(){
   const el=document.getElementById('ehlist');
-  if(!S.cur||!S.cur.ends.length){ el.innerHTML='<div style="font-size:.8rem;color:var(--dim);text-align:center;padding:6px">尚無完成的輪次</div>'; return; }
-  el.innerHTML=S.cur.ends.map((e,idx)=>{
-    const bdgs=e.arrows.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
-    const isSelected=idx===selectedEndIndex?'border-color:var(--accent);background:rgba(226,185,106,.1)':'';
-    return`<div class="erow" onclick="selectEnd(${idx})" style="cursor:pointer;transition:all .2s;border:1px solid transparent;${isSelected}"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span></div>`;
+  if(!S.cur){ el.innerHTML=''; return; }
+  const delBtn=i=>`<button onclick="deleteEnd(${i})" style="background:rgba(244,67,54,.15);border:none;color:var(--err);border-radius:5px;padding:3px 7px;cursor:pointer;font-size:.75rem;flex-shrink:0;margin-left:4px;-webkit-tap-highlight-color:transparent">🗑</button>`;
+  // ── 當前輪 ──
+  const arrows=S.end.arrows;
+  const curBdgs=arrows.map((a,i)=>{
+    const c=COL[a.s];
+    return`<span class="ebdg" style="background:${c.bg};color:${c.fg};cursor:pointer;-webkit-tap-highlight-color:transparent" onclick="deleteCurrentArrow(${i})">${a.s}</span>`;
   }).join('');
+  const emptyBdgs=Array(Math.max(0,S.cur.ape-arrows.length)).fill(`<span class="ebdg" style="background:rgba(0,0,0,.07);color:var(--dim);opacity:.5">·</span>`).join('');
+  const ctrlBtns=`<div style="display:flex;gap:4px;flex-shrink:0;align-items:center">
+    ${arrows.length?`<button onclick="undoLast()" style="background:rgba(192,57,43,.12);border:none;color:var(--err);border-radius:5px;padding:3px 8px;cursor:pointer;font-size:.75rem;-webkit-tap-highlight-color:transparent">↩</button>`:''}
+    ${arrows.length>=S.cur.ape?`<button onclick="finishEnd()" style="background:var(--ok);border:none;color:#fff;border-radius:5px;padding:3px 9px;cursor:pointer;font-size:.75rem;font-weight:700;-webkit-tap-highlight-color:transparent">完成</button>`:''}
+  </div>`;
+  const curRow=`<div class="erow" style="border:1.5px solid var(--accent);margin-bottom:5px">
+    <span class="enum" style="color:var(--accent);font-weight:700;font-size:.72rem">${S.cur.ends.length+1}</span>
+    <div class="earr">${curBdgs}${emptyBdgs}</div>
+    ${ctrlBtns}
+  </div>`;
+  // ── 已完成輪次 ──
+  const scoreOrder=s=>s==='X'?11:s==='M'?0:parseInt(s)||0;
+  let doneRows='';
+  if(!S.cur.ends.length){
+    doneRows='<div style="font-size:.78rem;color:var(--dim);text-align:center;padding:4px 0">尚無完成的輪次</div>';
+  } else if(isMatchPlay(S.cur)){
+    const cfg=S.cur.matchCfg||getMatchConfig(S.cur.sessionType,S.cur.bowType);
+    doneRows=S.cur.ends.map((e,i)=>{
+      const won=e.mySP>e.oppSP, draw=e.mySP===e.oppSP;
+      const rc=cfg?.useSet?(won?'mend-won':draw?'mend-draw':'mend-lost'):'';
+      const sp=cfg?.useSet?`<span style="font-size:.7rem;color:${won?'#4caf50':draw?'var(--dim)':'var(--err)'}"> [${e.mySP}:${e.oppSP}]</span>`:'';
+      const soTag=e.isShootoff?`<span style="font-size:.65rem;background:rgba(255,200,0,.2);color:#f5c518;border-radius:3px;padding:1px 4px;margin-left:3px">加射</span>`:'';
+      return`<div class="erow ${rc}"><span class="enum">${e.n}</span><div style="flex:1;font-size:.8rem">我 <b style="color:var(--accent)">${e.tot}</b> vs 對 <b>${e.oppTot}</b>${sp}${soTag}</div>${delBtn(i)}</div>`;
+    }).join('');
+  } else {
+    doneRows=S.cur.ends.map((e,i)=>{
+      const sorted=[...e.arrows].sort((a,b)=>scoreOrder(b.s)-scoreOrder(a.s));
+      const bdgs=sorted.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
+      return`<div class="erow"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
+    }).join('');
+  }
+  el.innerHTML=curRow+doneRows;
+}
+function deleteCurrentArrow(idx){
+  if(!S.cur||idx<0||idx>=S.end.arrows.length) return;
+  S.end.arrows.splice(idx,1);
+  save(); renderSlots(); renderMarkers(); updateTotals(); updateFinBtn(); updateBigModalHint();
 }
 
-function selectEnd(idx){
-  selectedEndIndex=selectedEndIndex===idx?-1:idx;
-  renderEndsHistory();
-  renderMarkers();
+function deleteEnd(idx){
+  if(!S.cur||idx<0||idx>=S.cur.ends.length) return;
+  const endNum=S.cur.ends[idx].n;
+  if(!confirm(`確定刪除第 ${endNum} 輪記錄？`)) return;
+  S.cur.ends.splice(idx,1);
+  S.cur.ends.forEach((e,i)=>e.n=i+1);
+  save(); renderScore();
+  toast(`第 ${endNum} 輪已刪除`);
 }
 
 function updateTotals(){
@@ -947,6 +1290,7 @@ function renderHistory(){
     const xn=s.ends.flatMap(e=>e.arrows).filter(a=>a.s==='X').length;
     const meta=[];
     if(s.bowType) meta.push(s.bowType==='compound'?'複合弓':'反曲弓');
+    if(s.sessionType) meta.push(s.sessionType);
     if(s.weather) meta.push(s.weather);
     if(s.body)    meta.push('體能'+starsHTML(s.body));
     if(s.arrowModel) meta.push(s.arrowModel+(s.arrowSize?' '+s.arrowSize:''));
@@ -979,7 +1323,6 @@ function renderStats(){
   let missN=0;
   S.sessions.forEach(s=>s.ends.flatMap(e=>e.arrows).forEach(a=>{ if(isMiss(a.s,s.bowType||'recurve')) missN++; }));
   const cnt={}; SC_ALL.forEach(s=>cnt[s]=0); all.forEach(a=>cnt[a.s]=(cnt[a.s]||0)+1);
-  const conc=calcConcentration(all);
   el.innerHTML=`
     <div class="card">
       <div class="ctitle">整體數據</div>
@@ -990,16 +1333,6 @@ function renderStats(){
         <div class="sitem"><div class="sval">${cnt['X']||0}</div><div class="slbl">X 總數</div></div>
       </div>
     </div>
-    ${conc?`<div class="card">
-      <div class="ctitle">集中率分析</div>
-      <div class="sgrid">
-        <div class="sitem"><div class="sval">${conc.avgDist}</div><div class="slbl">平均距靶心%</div></div>
-        <div class="sitem"><div class="sval">${conc.cep}</div><div class="slbl">中距(CEP)%</div></div>
-        <div class="sitem"><div class="sval">${conc.stdDev}</div><div class="slbl">標準差%</div></div>
-        <div class="sitem"><div class="sval">${conc.withCoords}</div><div class="slbl">有落點記錄</div></div>
-      </div>
-    </div>`:''}
-`
     <div class="card">
       <div class="ctitle">命中率分析</div>
       <div class="sgrid">
@@ -1048,7 +1381,7 @@ function showDetail(id){
       <div style="font-size:.82rem;color:var(--dim);padding-bottom:4px">
         / ${max} · ${max>0?((tot/max)*100).toFixed(1):0}%<br>
         X: ${xn} · 輪均: ${s.ends.length?(tot/s.ends.length).toFixed(1):0}<br>
-        ${s.bowType==='compound'?'複合弓':'反曲弓'} · ${s.weather||''} ${s.body?'· 體能 '+starsHTML(s.body):''}
+        ${s.sessionType||''} · ${s.bowType==='compound'?'複合弓':'反曲弓'} · ${s.weather||''} ${s.body?'· 體能 '+starsHTML(s.body):''}
         ${s.arrowModel?'<br>箭型: '+s.arrowModel+(s.arrowSize?' '+s.arrowSize:''):''}
       </div>
     </div>
@@ -1057,16 +1390,43 @@ function showDetail(id){
       <div class="mstat" style="flex:1"><div class="mstat-val">${st.yellow}%</div><div class="mstat-lbl">黃環命中率</div></div>
       <div class="mstat" style="flex:1"><div class="mstat-val">${st.miss}%</div><div class="mstat-lbl">${st.missLabel}</div></div>
     </div>`:''}
-    <div class="ctitle">每輪明細</div>
-    ${s.ends.map(e=>{
+    <div class="ctitle">每輪明細 <span style="font-size:.68rem;color:var(--dim);font-weight:400">（點擊輪次可展開明細）</span></div>
+    ${s.ends.map((e,ei)=>{
       const bdgs=e.arrows.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
-      return`<div class="erow"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span></div>`;
+      return`<div class="erow" id="erow-${s.id}-${ei}" style="cursor:pointer" onclick="toggleEndTarget('${s.id}',${ei})"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span></div>`;
     }).join('')}`;
   document.getElementById('dm-export').onclick=()=>exportSession(id);
   document.getElementById('dm-del').onclick=()=>deleteSession(id);
+  document.getElementById('dm-export2').onclick=()=>exportSession(id);
+  document.getElementById('dm-del2').onclick=()=>deleteSession(id);
   document.getElementById('detailmodal').classList.add('on');
 }
 function closeDetail(){ document.getElementById('detailmodal').classList.remove('on'); }
+
+function toggleEndTarget(sid, ei){
+  const panelId=`etp-${sid}-${ei}`;
+  const existing=document.getElementById(panelId);
+  if(existing){ existing.remove(); return; }
+  const s=S.sessions.find(x=>x.id===sid); if(!s) return;
+  const end=s.ends[ei]; if(!end) return;
+  const hasPos=end.arrows.some(a=>a.x!==null);
+  const panel=document.createElement('div');
+  panel.id=panelId;
+  panel.style.cssText='padding:10px 8px;background:rgba(0,0,0,.2);border-radius:8px;margin-bottom:4px';
+  if(hasPos){
+    const rings=s.bowType==='compound'?compoundRings():recurveRings();
+    const markers=end.arrows.filter(a=>a.x!==null).map(a=>{
+      const c=COL[a.s];
+      return`<g><circle cx="${a.x*300}" cy="${a.y*300}" r="9" fill="${c.bg}" stroke="${c.fg}" stroke-width="2" opacity=".95"/><text x="${a.x*300}" y="${a.y*300+4}" text-anchor="middle" font-size="7.5" fill="${c.fg}" font-weight="bold">${a.s}</text></g>`;
+    }).join('');
+    panel.innerHTML=`<div style="text-align:center"><svg viewBox="0 0 300 300" xmlns="http://www.w3.org/2000/svg" style="width:170px;height:170px;filter:drop-shadow(0 2px 8px rgba(0,0,0,.5))"><g>${rings}</g>${markers}</svg></div>`;
+  } else {
+    const rows=end.arrows.map((a,i)=>{const c=COL[a.s];return`<span style="display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;border-radius:5px;background:${c.bg};color:${c.fg};font-size:.8rem;font-weight:700;margin:2px">${a.s}</span>`;}).join('');
+    panel.innerHTML=`<div style="font-size:.72rem;color:var(--dim);margin-bottom:6px">此輪無落點記錄（使用手動輸入）</div><div>${rows}</div>`;
+  }
+  const erow=document.getElementById(`erow-${sid}-${ei}`);
+  if(erow) erow.insertAdjacentElement('afterend', panel);
+}
 function deleteSession(id){
   if(!confirm('確定刪除此場次？')) return;
   S.sessions=S.sessions.filter(s=>s.id!==id);
@@ -1077,7 +1437,7 @@ function deleteSession(id){
 function exportSession(id){ const s=S.sessions.find(x=>x.id===id); if(!s) return; doExport([s],`射箭計分_${s.archer}_${s.date}`); }
 function exportAll(){ if(!S.sessions.length){ toast('尚無資料可匯出'); return; } doExport(S.sessions,`射箭計分_所有場次_${today()}`); }
 
-async function doExport(sessions, fname){
+function doExport(sessions, fname){
   const wb=XLSX.utils.book_new();
   const s1=[
     ['射箭計分系統 — 場次摘要'],['匯出時間:', new Date().toLocaleString('zh-TW')],[],
@@ -1134,28 +1494,7 @@ async function doExport(sessions, fname){
   ws4['!cols']=[{wch:8},{wch:8},{wch:10},{wch:10}];
   XLSX.utils.book_append_sheet(wb,ws4,'分數分布');
 
-  const fileBlob=XLSX.write(wb,{bookType:'xlsx',type:'array'});
-  const blob=new Blob([fileBlob],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
-
-  if('showSaveFilePicker' in window){
-    try{
-      const handle=await showSaveFilePicker({suggestedName:`${fname}.xlsx`,types:[{description:'Excel 檔案',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}]});
-      const writable=await handle.createWritable();
-      await writable.write(blob);
-      await writable.close();
-      toast('Excel 已匯出！');
-      return;
-    }catch(e){
-      if(e.name!=='AbortError') console.error(e);
-    }
-  }
-
-  const url=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=url;
-  a.download=`${fname}.xlsx`;
-  a.click();
-  URL.revokeObjectURL(url);
+  XLSX.writeFile(wb,`${fname}.xlsx`);
   toast('Excel 已匯出！');
 }
 
@@ -1164,6 +1503,27 @@ function openNew(){
   document.getElementById('i-date').value=today();
   document.getElementById('i-time').value=nowTime();
   initForm();
+  const allSessions=[...(S.cur?[S.cur]:[]),...S.sessions];
+  const todayStr=today();
+  const todayRef=allSessions.find(s=>s.date===todayStr);
+  const src=todayRef||allSessions[0]; // 優先今日場次，否則取最近一筆
+  if(src){
+    document.getElementById('i-archer').value=src.archer||'';
+    if(src.bowType){
+      selectedBowType=src.bowType;
+      document.getElementById('bow-recurve').classList.toggle('on',src.bowType==='recurve');
+      document.getElementById('bow-compound').classList.toggle('on',src.bowType==='compound');
+    }
+    document.getElementById('i-dist').value=src.dist||'70m';
+    document.getElementById('i-face').value=src.face||'122cm';
+    document.getElementById('i-arrowmodel').value=src.arrowModel||'';
+    document.getElementById('i-arrowsize').value=src.arrowSize||'';
+    if(src.weather){
+      selectedWx=src.weather.split(' ').filter(Boolean);
+      document.querySelectorAll('.wx-btn').forEach(b=>b.classList.toggle('on',selectedWx.includes(b.textContent.trim())));
+    }
+    if(src.body){selectedBody=src.body;document.querySelectorAll('#body-stars .star').forEach((s,i)=>s.classList.toggle('on',i<src.body));}
+  }
   document.getElementById('newmodal').classList.add('on');
 }
 function closeNew(){ document.getElementById('newmodal').classList.remove('on'); }
@@ -1184,10 +1544,24 @@ function switchTab(t){
 let _tt;
 function toast(msg){ const el=document.getElementById('toast'); el.textContent=msg; el.classList.add('on'); clearTimeout(_tt); _tt=setTimeout(()=>el.classList.remove('on'),2800); }
 
+function cleanOldSessions(){
+  const cutoff=new Date();
+  cutoff.setDate(cutoff.getDate()-30);
+  const cutoffStr=cutoff.toISOString().slice(0,10);
+  const before=S.sessions.length;
+  S.sessions=S.sessions.filter(s=>s.date>=cutoffStr);
+  if(S.sessions.length<before) save();
+}
+
 load();
+cleanOldSessions();
 renderScore();
 renderHistory();
 renderStats();
+
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('/sw.js');
+}
 </script>
 </body>
 </html>
