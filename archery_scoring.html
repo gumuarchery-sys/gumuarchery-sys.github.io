@@ -615,8 +615,8 @@ function recurveRings(){
 <circle cx="150" cy="150" r="42"  fill="#EE2222" stroke="#CC0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="28"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="14"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="3"   fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="3"   fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="150" cy="150" r="7"   fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="7"   fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
 <line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
@@ -641,8 +641,8 @@ function compoundRings(){
 <circle cx="150" cy="150" r="70"     fill="#CC0000" stroke="#AA0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="46.67"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="23.33"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="3"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="3"  fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="150" cy="150" r="7"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="7"  fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
 <line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
@@ -1254,8 +1254,7 @@ function renderEndsHistory(){
     }).join('');
   } else {
     doneRows=S.cur.ends.map((e,i)=>{
-      const sorted=[...e.arrows].sort((a,b)=>scoreOrder(b.s)-scoreOrder(a.s));
-      const bdgs=sorted.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
+      const bdgs=e.arrows.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
       const isSelected=i===selectedEndIndex?'border-color:var(--accent);background:rgba(220,38,38,.08)':'';
       return`<div class="erow" onclick="selectEnd(${i})" style="cursor:pointer;transition:all .2s;border:1px solid transparent;${isSelected}"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
     }).join('');
@@ -1293,10 +1292,12 @@ function updateTotals(){
   document.getElementById('tavg').textContent=avg;
   const allA=[...S.cur.ends.flatMap(e=>e.arrows), ...S.end.arrows];
   const st=calcStats(allA, S.cur.bowType||'recurve');
+  const conc=calcConcentration(allA);
   document.getElementById('mstats').innerHTML=st?`
     <div class="mstat"><div class="mstat-val">${st.ten}%</div><div class="mstat-lbl">10分命中率</div></div>
     <div class="mstat"><div class="mstat-val">${st.yellow}%</div><div class="mstat-lbl">黃環命中率</div></div>
     <div class="mstat"><div class="mstat-val">${st.miss}%</div><div class="mstat-lbl">${st.missLabel}</div></div>
+    ${conc?`<div class="mstat"><div class="mstat-val">${conc.avgDist}</div><div class="mstat-lbl">集中率%</div></div>`:''}
   `:'';
 }
 
