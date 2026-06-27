@@ -626,7 +626,8 @@ function calcArrowPositionStats(sessions, bowType){
 }
 
 // ── TARGET SVG CONTENT ──────────────────────────
-function recurveRings(){
+function recurveRings(face){
+  const xr=face==='40cm'?12:7.5;
   return `
 <circle cx="150" cy="150" r="140" fill="#f0f0f0" stroke="#ccc" stroke-width="1"/>
 <circle cx="150" cy="150" r="126" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>
@@ -638,8 +639,8 @@ function recurveRings(){
 <circle cx="150" cy="150" r="42"  fill="#EE2222" stroke="#CC0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="28"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="14"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="10.5"   fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="10.5"   fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="150" cy="150" r="${xr}"   fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="${xr}"   fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
 <line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
@@ -656,7 +657,8 @@ function recurveRings(){
 <text x="150" y="141" text-anchor="middle" font-size="8.5" fill="rgba(0,0,0,.35)">10</text>`;
 }
 
-function compoundRings(){
+function compoundRings(face){
+  const xr=face==='40cm'?12:7.5;
   return `
 <circle cx="150" cy="150" r="140"    fill="#1155CC" stroke="#003087" stroke-width=".5"/>
 <circle cx="150" cy="150" r="116.67" fill="#003087" stroke="#002070" stroke-width=".5"/>
@@ -664,8 +666,8 @@ function compoundRings(){
 <circle cx="150" cy="150" r="70"     fill="#CC0000" stroke="#AA0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="46.67"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="23.33"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="10.5"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="10.5"  fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="150" cy="150" r="${xr}"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="${xr}"  fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
 <line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
@@ -679,7 +681,7 @@ function compoundRings(){
 }
 
 function updateTargetRings(bowType){
-  const rings = bowType==='compound' ? compoundRings() : recurveRings();
+  const rings = bowType==='compound' ? compoundRings(S.cur?.face) : recurveRings(S.cur?.face);
   const el1 = document.getElementById('target-rings');
   const el2 = document.getElementById('target-rings-big');
   if(el1) el1.innerHTML = rings;
