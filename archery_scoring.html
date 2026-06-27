@@ -1448,7 +1448,7 @@ function deleteSession(id){
 function exportSession(id){ const s=S.sessions.find(x=>x.id===id); if(!s) return; doExport([s],`射箭計分_${s.archer}_${s.date}`); }
 function exportAll(){ if(!S.sessions.length){ toast('尚無資料可匯出'); return; } doExport(S.sessions,`射箭計分_所有場次_${today()}`); }
 
-function doExport(sessions, fname){
+async function doExport(sessions, fname){
   const wb=XLSX.utils.book_new();
   const s1=[
     ['射箭計分系統 — 場次摘要'],['匯出時間:', new Date().toLocaleString('zh-TW')],[],
@@ -1505,7 +1505,26 @@ function doExport(sessions, fname){
   ws4['!cols']=[{wch:8},{wch:8},{wch:10},{wch:10}];
   XLSX.utils.book_append_sheet(wb,ws4,'分數分布');
 
-  XLSX.writeFile(wb,`${fname}.xlsx`);
+  const fileBlob=XLSX.write(wb,{bookType:'xlsx',type:'array'});
+  const blob=new Blob([fileBlob],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+  if('showSaveFilePicker' in window){
+    try{
+      const handle=await showSaveFilePicker({suggestedName:`${fname}.xlsx`,types:[{description:'Excel 檔案',accept:{'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':['.xlsx']}}]});
+      const writable=await handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      toast('Excel 已匯出！');
+      return;
+    }catch(e){
+      if(e.name!=='AbortError') console.error(e);
+    }
+  }
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  a.href=url;
+  a.download=`${fname}.xlsx`;
+  a.click();
+  URL.revokeObjectURL(url);
   toast('Excel 已匯出！');
 }
 
