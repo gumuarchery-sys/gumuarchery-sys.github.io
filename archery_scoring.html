@@ -602,6 +602,29 @@ function calcConcentration(arrows){
   };
 }
 
+function calcArrowPositionStats(sessions, bowType){
+  const arrowStats={};
+  for(let pos=0;pos<6;pos++){
+    const arrowsAtPos=sessions.flatMap(s=>s.ends.flatMap(e=>e.arrows[pos])).filter(Boolean);
+    if(!arrowsAtPos.length) continue;
+    const n=arrowsAtPos.length;
+    const tenN=arrowsAtPos.filter(a=>a.s==='X'||a.s==='10').length;
+    const yN=arrowsAtPos.filter(a=>a.s==='X'||a.s==='10'||a.s==='9').length;
+    let missN=0;
+    sessions.forEach(s=>s.ends.forEach(e=>{
+      const a=e.arrows[pos];
+      if(a&&isMiss(a.s,bowType||'recurve')) missN++;
+    }));
+    arrowStats[pos+1]={
+      ten:(tenN/n*100).toFixed(1),
+      yellow:(yN/n*100).toFixed(1),
+      miss:(missN/n*100).toFixed(1),
+      n:n
+    };
+  }
+  return Object.keys(arrowStats).length>0?arrowStats:null;
+}
+
 // ── TARGET SVG CONTENT ──────────────────────────
 function recurveRings(){
   return `
@@ -1353,6 +1376,7 @@ function renderStats(){
   S.sessions.forEach(s=>s.ends.flatMap(e=>e.arrows).forEach(a=>{ if(isMiss(a.s,s.bowType||'recurve')) missN++; }));
   const cnt={}; SC_ALL.forEach(s=>cnt[s]=0); all.forEach(a=>cnt[a.s]=(cnt[a.s]||0)+1);
   const conc=calcConcentration(all);
+  const arrowPos=calcArrowPositionStats(S.sessions, S.sessions[0]?.bowType||'recurve');
   el.innerHTML=`
     <div class="card">
       <div class="ctitle">整體數據</div>
@@ -1388,6 +1412,22 @@ function renderStats(){
         return`<div class="zbar"><span class="zlbl" style="color:${c.bg}">${s}</span><div class="ztrack"><div class="zfill" style="width:${p}%;background:${c.bg}"></div></div><span class="zcnt">${n}</span></div>`;
       }).join('')}
     </div>
+    ${arrowPos?`<div class="card">
+      <div class="ctitle">箭位命中率分析</div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:6px">
+        ${Object.entries(arrowPos).map(([pos,stats])=>`
+          <div style="background:rgba(255,255,255,.05);border-radius:8px;padding:8px;text-align:center">
+            <div style="font-weight:700;color:var(--accent);margin-bottom:4px">第${pos}支箭</div>
+            <div style="font-size:.7rem;color:var(--dim);line-height:1.4">
+              <div>10分: ${stats.ten}%</div>
+              <div>黃環: ${stats.yellow}%</div>
+              <div style="font-size:.65rem;color:var(--dim);margin-top:2px">n=${stats.n}</div>
+            </div>
+          </div>
+        `).join('')}
+      </div>
+    </div>`:''}
+`
     <div class="card">
       <div class="ctitle">歷次場次</div>
       ${S.sessions.map(s=>{
