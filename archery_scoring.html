@@ -1364,6 +1364,73 @@ function renderHistory(){
 }
 
 // ── STATS ────────────────────────────────────────
+function showArrowPositionTarget(pos){
+  const targetEl=document.getElementById('arrow-pos-target');
+  const svgEl=document.getElementById('arrow-pos-svg');
+  const legendEl=document.getElementById('arrow-pos-legend');
+  
+  // 收集該箭位在所有場次、所有輪次中的數據
+  const arrowData=[];
+  const colorMap={}; // 輪次編號 -> 顏色
+  let globalEndNum=0;
+  
+  S.sessions.forEach((s,si)=>{
+    s.ends.forEach((e,ei)=>{
+      globalEndNum++;
+      const arrow=e.arrows[pos];
+      if(arrow && arrow.x!==null && arrow.y!==null){
+        arrowData.push({
+          x: arrow.x,
+          y: arrow.y,
+          score: arrow.s,
+          endNum: e.n,
+          sessionIdx: si,
+          globalEndNum: globalEndNum
+        });
+      }
+    });
+  });
+  
+  // 為每個輪次分配顏色（漸層）
+  const colors=['#FF6B6B','#4ECDC4','#45B7D1','#FFA07A','#98D8C8','#F7DC6F','#BB8FCE','#85C1E2','#F8B88B','#52C0A1','#FF9FF3','#54A0FF'];
+  arrowData.forEach(d=>{
+    if(!colorMap[d.globalEndNum]){
+      colorMap[d.globalEndNum]=colors[(d.globalEndNum-1)%colors.length];
+    }
+  });
+  
+  if(!arrowData.length){
+    targetEl.style.display='none';
+    return;
+  }
+  
+  // 繪製靶面背景 + 落點
+  const face=S.sessions[0]?.face||'122cm';
+  const rings=targetRings(face);
+  let svg=rings+'\n';
+  
+  // 繪製該箭位在各輪的位置
+  arrowData.forEach(d=>{
+    const c=colorMap[d.globalEndNum];
+    svg+=`<circle cx="${d.x*300}" cy="${d.y*300}" r="4" fill="${c}" stroke="#fff" stroke-width="1" opacity="0.9"/>`;
+    svg+=`<text x="${d.x*300}" y="${d.y*300+1.2}" text-anchor="middle" font-size="5" fill="#fff" font-weight="bold">${d.globalEndNum}</text>`;
+  });
+  
+  svgEl.innerHTML=svg;
+  
+  // 生成圖例
+  let legendHtml='';
+  Object.keys(colorMap).sort((a,b)=>parseInt(a)-parseInt(b)).forEach(endNum=>{
+    const d=arrowData.find(x=>x.globalEndNum===parseInt(endNum));
+    if(d){
+      legendHtml+=`<div style="display:flex;align-items:center;gap:4px"><span style="display:inline-block;width:8px;height:8px;border-radius:50%;background:${colorMap[endNum]}"></span><span>第${endNum}輪 ${d.score}</span></div>`;
+    }
+  });
+  legendEl.innerHTML=legendHtml;
+  
+  targetEl.style.display='block';
+}
+
 function renderStats(){
   const el=document.getElementById('statscon');
   const all=S.sessions.flatMap(s=>s.ends.flatMap(e=>e.arrows));
@@ -1427,6 +1494,19 @@ function renderStats(){
         `).join('')}
       </div>
     </div>`:''}
+    </div>
+    <div class="card">
+      <div class="ctitle">箭位落點分布</div>
+      <div style="margin-bottom:12px;display:flex;gap:6px;flex-wrap:wrap">
+        ${[1,2,3,4,5,6].map(pos=>`
+          <button onclick="showArrowPositionTarget(${pos-1})" style="padding:6px 12px;border:1px solid var(--accent);border-radius:6px;background:rgba(0,0,0,.1);color:var(--accent);cursor:pointer;font-size:.85rem">第${pos}支箭</button>
+        `).join('')}
+      </div>
+      <div id="arrow-pos-target" style="display:none;margin-top:10px">
+        <svg viewBox="0 0 300 300" style="width:100%;max-width:280px;border:1px solid rgba(255,255,255,.1);border-radius:8px" id="arrow-pos-svg"></svg>
+        <div id="arrow-pos-legend" style="font-size:.75rem;color:var(--dim);margin-top:6px;display:grid;grid-template-columns:repeat(auto-fit,minmax(80px,1fr));gap:4px"></div>
+      </div>
+    </div>
     <div class="card">
       <div class="ctitle">歷次場次</div>
       ${S.sessions.map(s=>{
