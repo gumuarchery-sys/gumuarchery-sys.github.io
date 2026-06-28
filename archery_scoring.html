@@ -1831,7 +1831,7 @@ function toggleCustomEnds(sel){ document.getElementById('customEndsGrp').style.d
 
 // ── TABS ─────────────────────────────────────────
 function switchTab(t){
-  ['score','history','stats'].forEach(x=>{
+  ['score','history','stats','monitor'].forEach(x=>{
     document.getElementById('tab-'+x).classList.toggle('on',x===t);
     document.getElementById('nb-'+x)?.classList.toggle('on',x===t);
     document.getElementById('tn-'+x)?.classList.toggle('on',x===t);
