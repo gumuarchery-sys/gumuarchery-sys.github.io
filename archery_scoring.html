@@ -626,7 +626,7 @@ function calcArrowPositionStats(sessions, bowType){
 
 // ── TARGET SVG CONTENT ──────────────────────────
 function recurveRings(face){
-  const xr=face==='40cm'?12:face==='80cm'?10:7.5;
+  const xr=face==='40cm'?5:face==='80cm'?10:7.5;
   const hideBelow5=face==='40cm';
   return `
 ${hideBelow5?'':
@@ -659,7 +659,7 @@ ${hideBelow5?'':
 }
 
 function compoundRings(face){
-  const xr=face==='40cm'?12:face==='80cm'?10:7.5;
+  const xr=face==='40cm'?5:face==='80cm'?10:7.5;
   const hideBelow5=face==='40cm';
   return `
 ${hideBelow5?'':
