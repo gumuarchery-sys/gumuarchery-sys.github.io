@@ -178,35 +178,11 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
 .opp-inp:focus{outline:none;border-color:var(--accent)}
 .daily-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:8px;font-size:.8rem;color:var(--dim)}
 .daily-val{color:var(--accent);font-weight:700;font-size:.95rem}
-/* ── 懸浮延遲監看視窗 ──────────────────────────── */
-#fm-btn{position:fixed;bottom:140px;right:16px;width:46px;height:46px;border-radius:50%;background:rgba(15,15,15,.9);border:1.5px solid rgba(240,165,0,.6);color:#f0a500;font-size:1.25rem;cursor:pointer;z-index:150;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 2px 16px rgba(0,0,0,.5);touch-action:none;-webkit-tap-highlight-color:transparent}
-#fm-btn.fm-active{border-color:#f0a500;background:rgba(30,20,0,.92)}
-#fm-panel{position:fixed;bottom:196px;right:16px;width:272px;background:rgba(10,10,10,.95);border:1px solid rgba(255,255,255,.14);border-radius:14px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:149;display:none;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.65);touch-action:none}
-#fm-panel.open{display:block}
-#fm-tbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(240,165,0,.1);border-bottom:1px solid rgba(255,255,255,.08);cursor:grab;user-select:none;-webkit-user-select:none}
-#fm-tbar:active{cursor:grabbing}
-#fm-cvwrap{position:relative;width:100%;height:153px;background:#000;overflow:hidden}
-#fm-canvas{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
-#fm-ovl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:rgba(10,10,10,.92)}
-#fm-ovl-icon{font-size:1.8rem}
-#fm-ovl-txt{font-size:.78rem;color:#888}
-#fm-cnt{font-size:2.8rem;font-weight:900;color:#f0a500;display:none}
-#fm-rec{position:absolute;top:6px;left:8px;display:none;align-items:center;gap:5px;background:rgba(0,0,0,.6);padding:2px 9px;border-radius:12px;font-size:.7rem}
-#fm-rec.show{display:flex}
-#fm-rec-dot{width:6px;height:6px;background:#e53935;border-radius:50%;animation:blink 1s infinite}
-#fm-ctrl{padding:9px 12px;display:flex;flex-direction:column;gap:7px}
-.fm-cr{display:flex;gap:6px}
-.fm-cbtn{flex:1;height:30px;border-radius:15px;border:1px solid #444;background:#222;color:#888;font-size:.76rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
-.fm-cbtn.on{background:rgba(240,165,0,.12);color:#f0a500;border-color:#f0a500}
-.fm-dr{display:flex;align-items:center;justify-content:center;gap:8px}
-.fm-adj{width:44px;height:44px;border-radius:50%;border:1px solid #444;background:#222;color:#fff;font-size:1.3rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
-#fm-dv{width:50px;text-align:center;font-size:1.3rem;font-weight:700;color:#f0a500}
-.fm-br{display:flex;gap:6px}
-.fm-mb{flex:1;height:36px;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
-#fm-sb{background:#f0a500;color:#111}
-#fm-pb{background:#333;color:#fff;border:1px solid #555}
-#fm-xb{background:#c0392b;color:#fff}
-.fm-h{display:none!important}
+.cam-btn{height:40px;border-radius:20px;border:1px solid #555;background:#222;color:#888;font-size:.85rem;cursor:pointer;font-weight:600;-webkit-tap-highlight-color:transparent;flex:1}
+.cam-btn.on{background:rgba(240,165,0,.12);color:var(--accent);border-color:var(--accent)}
+.adj-btn{width:42px;height:42px;border-radius:50%;border:1px solid #555;background:#222;color:#fff;font-size:1.2rem;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;-webkit-tap-highlight-color:transparent}
+.main-btn{height:46px;border:none;border-radius:23px;font-size:.9rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+
 </style>
 </head>
 <body>
@@ -327,6 +303,42 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
   </div>
 </div>
 
+<div id="tab-monitor" class="tab page">
+  <div class="inner" style="display:flex;flex-direction:column;gap:12px">
+    <h2 style="font-size:1.1rem">延遲監看</h2>
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <div style="display:flex;gap:8px">
+        <button class="cam-btn on" id="mon-cam-b">📷 後鏡頭</button>
+        <button class="cam-btn" id="mon-cam-f">🤳 前鏡頭</button>
+      </div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px">
+        <span style="font-size:.85rem;color:var(--dim)">延遲秒數</span>
+        <button class="adj-btn" id="mon-minus">−</button>
+        <div id="mon-dv" style="width:60px;text-align:center;font-size:1.4rem;font-weight:700;color:var(--accent)">5</div>
+        <span style="font-size:.85rem;color:var(--dim)">秒</span>
+        <button class="adj-btn" id="mon-plus">＋</button>
+      </div>
+      <div style="display:flex;gap:8px">
+        <button class="main-btn" id="mon-start" style="flex:1;background:#f0a500;color:#111">▶ 開始</button>
+        <button class="main-btn" id="mon-pause" style="flex:1;background:#333;color:#fff;border:1px solid #555;display:none">⏸ 暫停</button>
+        <button class="main-btn" id="mon-stop" style="flex:1;background:#c0392b;color:#fff;display:none">■ 停止</button>
+      </div>
+    </div>
+    <div style="position:relative;width:100%;height:0;padding-bottom:133.33%;background:#000;border-radius:10px;overflow:hidden">
+      <canvas id="mon-cv" style="position:absolute;top:0;left:0;width:100%;height:100%;display:block"></canvas>
+      <div id="mon-ovl" style="position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;background:rgba(10,10,10,.95)">
+        <div style="font-size:2.5rem">📷</div>
+        <div style="font-size:.85rem;color:#888;text-align:center">選擇鏡頭後按開始</div>
+        <div id="mon-cnt" style="font-size:4rem;font-weight:900;color:var(--accent);display:none;line-height:1">5</div>
+      </div>
+      <div id="mon-rec" style="position:absolute;top:8px;left:8px;display:none;align-items:center;gap:6px;background:rgba(0,0,0,.6);padding:3px 12px;border-radius:14px;font-size:.75rem">
+        <div style="width:7px;height:7px;background:#e53935;border-radius:50%;animation:blink 1s infinite"></div>
+        <span id="mon-rec-lbl">延遲中</span>
+      </div>
+    </div>
+  </div>
+</div>
+
 <nav class="bnav">
   <button class="nbtn on" id="nb-score" onclick="switchTab('score')">
     <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="2"/><circle cx="12" cy="12" r="5.5" fill="none" stroke="currentColor" stroke-width="1.5"/><circle cx="12" cy="12" r="2.5" fill="currentColor"/></svg>計分
@@ -336,6 +348,9 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
   </button>
   <button class="nbtn" id="nb-stats" onclick="switchTab('stats')">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z"/></svg>統計
+  </button>
+  <button class="nbtn" id="nb-monitor" onclick="switchTab('monitor')">
+    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zm-5-11l-1.06-1.06-3.44 3.44-2.44-2.81L6.5 9.5 8.94 12l-.01.01L6.5 14.5l1.5 1.5L10.5 12l3.44 3.44 1.06-1.06-3.44-3.44 3.44-3.44z"/></svg>監看
   </button>
   <button class="nbtn" id="nb-new" onclick="openNew()">
     <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/></svg>新場次
@@ -1847,171 +1862,87 @@ renderStats();
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js');
 }
-</script>
-<!-- ── 懸浮延遲監看視窗 ── -->
-<button id="fm-btn" title="延遲監看">📷</button>
-<div id="fm-panel">
-  <div id="fm-tbar">
-    <span style="font-size:.78rem;color:#f0a500;font-weight:700;letter-spacing:1px">📷 延遲監看</span>
-    <button id="fm-close" style="background:none;border:none;color:#888;font-size:1rem;cursor:pointer;padding:0 4px;-webkit-tap-highlight-color:transparent">✕</button>
-  </div>
-  <div id="fm-cvwrap">
-    <canvas id="fm-canvas"></canvas>
-    <div id="fm-ovl">
-      <div id="fm-ovl-icon">📷</div>
-      <div id="fm-ovl-txt">選擇鏡頭後按開始</div>
-      <div id="fm-cnt"></div>
-    </div>
-    <div id="fm-rec"><div id="fm-rec-dot"></div><span id="fm-rec-lbl">延遲中</span></div>
-  </div>
-  <div id="fm-ctrl">
-    <div class="fm-cr">
-      <button class="fm-cbtn on" id="fm-cam-b">📷 後鏡</button>
-      <button class="fm-cbtn"    id="fm-cam-f">🤳 前鏡</button>
-    </div>
-    <div class="fm-dr">
-      <span style="font-size:.75rem;color:#aaa">延遲</span>
-      <button class="fm-adj" id="fm-minus">−</button>
-      <div id="fm-dv">5</div>
-      <span style="font-size:.75rem;color:#aaa">秒</span>
-      <button class="fm-adj" id="fm-plus">＋</button>
-    </div>
-    <div class="fm-br">
-      <button class="fm-mb" id="fm-sb">▶ 開始</button>
-      <button class="fm-mb fm-h" id="fm-pb">⏸ 暫停</button>
-      <button class="fm-mb fm-h" id="fm-xb">■ 停止</button>
-    </div>
-  </div>
-</div>
 
-<script>
-// ── 懸浮延遲監看（獨立 scope，不污染計分系統） ──────
+// ── 監看頁面邏輯 ────────────────────────────
 (function(){
-  const fmBtn   = document.getElementById('fm-btn');
-  const fmPanel = document.getElementById('fm-panel');
-  const fmTbar  = document.getElementById('fm-tbar');
-  const fmClose = document.getElementById('fm-close');
-  const fmCv    = document.getElementById('fm-canvas');
-  const fmCtx   = fmCv.getContext('2d');
-  const fmOvl   = document.getElementById('fm-ovl');
-  const fmOvlTxt= document.getElementById('fm-ovl-txt');
-  const fmCnt   = document.getElementById('fm-cnt');
-  const fmRec   = document.getElementById('fm-rec');
-  const fmRecLbl= document.getElementById('fm-rec-lbl');
-  const fmCamB  = document.getElementById('fm-cam-b');
-  const fmCamF  = document.getElementById('fm-cam-f');
-  const fmMinus = document.getElementById('fm-minus');
-  const fmPlus  = document.getElementById('fm-plus');
-  const fmDv    = document.getElementById('fm-dv');
-  const fmSb    = document.getElementById('fm-sb');
-  const fmPb    = document.getElementById('fm-pb');
-  const fmXb    = document.getElementById('fm-xb');
+  const monCv    = document.getElementById('mon-cv');
+  const monCtx   = monCv.getContext('2d');
+  const monOvl   = document.getElementById('mon-ovl');
+  const monCnt   = document.getElementById('mon-cnt');
+  const monRec   = document.getElementById('mon-rec');
+  const monRecLbl= document.getElementById('mon-rec-lbl');
+  const monCamB  = document.getElementById('mon-cam-b');
+  const monCamF  = document.getElementById('mon-cam-f');
+  const monMinus = document.getElementById('mon-minus');
+  const monPlus  = document.getElementById('mon-plus');
+  const monDv    = document.getElementById('mon-dv');
+  const monStart = document.getElementById('mon-start');
+  const monPause = document.getElementById('mon-pause');
+  const monStop  = document.getElementById('mon-stop');
 
   const capCv = document.createElement('canvas');
-  const capCx = capCv.getContext('2d', {willReadFrequently:true});
+  const capCx = capCv.getContext('2d',{willReadFrequently:true});
   const vid   = document.createElement('video');
   vid.muted=true; vid.playsInline=true; vid.setAttribute('playsinline','');
 
   let delay=5, running=false, paused=false;
   let stream=null, facing='environment';
   let buf=[], loopTmr=null, t0=0;
-  let capW=272, capH=153;
+  let capW=400, capH=300;
   const FPS=15, IV=Math.round(1000/FPS);
 
-  // ── 開關面板 ──
-  fmBtn.addEventListener('click', ()=>{
-    fmPanel.classList.toggle('open');
-    fmBtn.classList.toggle('fm-active', fmPanel.classList.contains('open'));
-  });
-  fmClose.addEventListener('click', ()=>{
-    fmPanel.classList.remove('open');
-    fmBtn.classList.remove('fm-active');
-  });
-
-  // ── 拖曳（觸控）──
-  let dragging=false, dragTarget=null, offX=0, offY=0;
-  function onDragStart(el, e){
-    dragging=true; dragTarget=el;
-    const t=e.touches?e.touches[0]:e;
-    const r=el.getBoundingClientRect();
-    offX=t.clientX-r.left; offY=t.clientY-r.top;
-    e.preventDefault();
-  }
-  fmTbar.addEventListener('touchstart', e=>onDragStart(fmPanel,e), {passive:false});
-  fmBtn.addEventListener('touchstart', e=>{ if(!fmPanel.classList.contains('open')) onDragStart(fmBtn,e); }, {passive:false});
-  document.addEventListener('touchmove', e=>{
-    if(!dragging||!dragTarget) return;
-    const t=e.touches[0];
-    const tw=dragTarget.offsetWidth, th=dragTarget.offsetHeight;
-    let left=t.clientX-offX, top=t.clientY-offY;
-    left=Math.max(0,Math.min(window.innerWidth-tw,left));
-    top=Math.max(0,Math.min(window.innerHeight-th,top));
-    dragTarget.style.left=left+'px'; dragTarget.style.top=top+'px';
-    dragTarget.style.right='auto'; dragTarget.style.bottom='auto';
-    e.preventDefault();
-  }, {passive:false});
-  document.addEventListener('touchend', ()=>{ dragging=false; dragTarget=null; });
-
-  // ── 鏡頭選擇 ──
-  fmCamB.addEventListener('click', ()=>{
-    facing='environment'; fmCamB.classList.add('on'); fmCamF.classList.remove('on');
+  monCamB.addEventListener('click',()=>{
+    facing='environment'; monCamB.classList.add('on'); monCamF.classList.remove('on');
     if(running){ stopCap(); startCam(); }
   });
-  fmCamF.addEventListener('click', ()=>{
-    facing='user'; fmCamF.classList.add('on'); fmCamB.classList.remove('on');
+  monCamF.addEventListener('click',()=>{
+    facing='user'; monCamF.classList.add('on'); monCamB.classList.remove('on');
     if(running){ stopCap(); startCam(); }
   });
-
-  // ── 延遲調整 ──
-  fmMinus.addEventListener('click', ()=>{ if(delay>1){ delay--; fmDv.textContent=delay; } });
-  fmPlus.addEventListener('click', ()=>{ if(delay<60){ delay++; fmDv.textContent=delay; } });
-
-  // ── 按鈕 ──
-  fmSb.addEventListener('click', startCam);
-  fmPb.addEventListener('click', ()=>{
+  monMinus.addEventListener('click',()=>{ if(delay>1){ delay--; monDv.textContent=delay; } });
+  monPlus.addEventListener('click',()=>{ if(delay<60){ delay++; monDv.textContent=delay; } });
+  monStart.addEventListener('click',startCam);
+  monPause.addEventListener('click',()=>{
     paused=!paused;
-    fmPb.textContent=paused?'▶ 繼續':'⏸ 暫停';
+    monPause.textContent=paused?'▶ 繼續':'⏸ 暫停';
   });
-  fmXb.addEventListener('click', stopAll);
+  monStop.addEventListener('click',stopAll);
 
-  function shw(...els){ els.forEach(e=>e.classList.remove('fm-h')); }
-  function hid(...els){ els.forEach(e=>e.classList.add('fm-h')); }
+  function shw(...els){ els.forEach(e=>e.style.display=''); }
+  function hid(...els){ els.forEach(e=>e.style.display='none'); }
 
   async function startCam(){
     try {
       if(stream) stream.getTracks().forEach(t=>t.stop());
       stream = await navigator.mediaDevices.getUserMedia({
-        video:{facingMode:facing, width:{ideal:640}, height:{ideal:480}}, audio:false
+        video:{facingMode:facing,width:{ideal:640},height:{ideal:480}}, audio:false
       });
       vid.srcObject=stream; await vid.play();
       await new Promise(res=>{
         if(vid.videoWidth>0){res();return;}
         vid.addEventListener('loadedmetadata',res,{once:true});
       });
-      const vw=vid.videoWidth||272, vh=vid.videoHeight||153;
-      // 縮放讓最長邊不超過 272，高不超過 153
-      const scale=Math.min(272/vw, 153/vh, 1);
+      const vw=vid.videoWidth||400, vh=vid.videoHeight||300;
+      const scale=Math.min(400/vw, 300/vh, 1);
       capW=Math.round(vw*scale); capH=Math.round(vh*scale);
       capCv.width=capW; capCv.height=capH;
-      fmCv.width=capW; fmCv.height=capH;
-      fmCv.style.width=capW+'px'; fmCv.style.height=capH+'px';
+      monCv.width=capW; monCv.height=capH;
       buf=[]; t0=Date.now(); running=true; paused=false;
-      hid(fmSb); shw(fmPb,fmXb);
-      fmRec.classList.add('show');
-      fmOvlTxt.textContent='緩衝中，請稍候…';
-      fmCnt.style.display=''; fmOvl.style.display='flex';
+      hid(monStart); shw(monPause, monStop);
+      monRec.classList.add('show');
+      monOvl.style.display='flex';
+      monCnt.style.display='';
       startLoop();
     } catch(err){
-      fmOvl.style.display='flex';
-      fmOvlTxt.textContent='相機錯誤：'+err.message;
-      fmCnt.style.display='none';
+      monOvl.style.display='flex';
+      monCnt.style.display='none';
     }
   }
 
   function startLoop(){
     if(!running) return;
     tick();
-    loopTmr=setTimeout(startLoop, IV);
+    loopTmr=setTimeout(startLoop,IV);
   }
 
   function tick(){
@@ -2026,13 +1957,13 @@ if('serviceWorker' in navigator){
     let best=null;
     for(let i=buf.length-1;i>=0;i--){ if(buf[i].ts<=tgt){best=buf[i];break;} }
     if(best){
-      fmOvl.style.display='none';
-      fmCtx.putImageData(best.data,0,0);
-      fmRecLbl.textContent=`延遲 ${delay} 秒`;
+      monOvl.style.display='none';
+      monCtx.putImageData(best.data,0,0);
+      monRecLbl.textContent=`延遲 ${delay} 秒`;
     } else {
-      fmOvl.style.display='flex';
+      monOvl.style.display='flex';
       const rem=Math.ceil((delay*1000-(now-t0))/1000);
-      fmCnt.textContent=rem>0?rem:'…';
+      monCnt.textContent=rem>0?rem:'…';
     }
   }
 
@@ -2044,14 +1975,14 @@ if('serviceWorker' in navigator){
   }
   function stopAll(){
     stopCap(); stream=null;
-    shw(fmSb); hid(fmPb,fmXb);
-    fmRec.classList.remove('show');
-    fmOvl.style.display='flex';
-    fmCnt.style.display='none';
-    fmOvlTxt.textContent='選擇鏡頭後按開始';
-    fmPb.textContent='⏸ 暫停';
+    shw(monStart); hid(monPause, monStop);
+    monRec.classList.remove('show');
+    monOvl.style.display='flex';
+    monCnt.style.display='none';
+    monPause.textContent='⏸ 暫停';
   }
 })();
+
 </script>
 </body>
 </html>
