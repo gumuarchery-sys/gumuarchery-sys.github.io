@@ -396,9 +396,8 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
         <div class="fg">
           <label class="fl">靶面</label>
           <select class="fi" id="i-face">
-            <option value="40cm">40cm</option>
-            <option value="80cm">80cm</option>
             <option value="122cm" selected>122cm</option>
+            <option value="40cm">40cm</option>
           </select>
         </div>
         <div class="fg">
@@ -508,6 +507,10 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
 const SC_RECURVE  = ['X','10','9','8','7','6','5','4','3','2','1','M'];
 const SC_COMPOUND = ['X','10','9','8','7','6','5','M'];
 const SC_ALL      = ['X','10','9','8','7','6','5','4','3','2','1','M'];
+// 靶紙決定計分環（與弓種無關）：122cm = 1~10 環；40cm = 6~10 環
+const SC_122 = ['X','10','9','8','7','6','5','4','3','2','1','M'];
+const SC_40  = ['X','10','9','8','7','6','M'];
+function scoresForFace(face){ return face==='40cm' ? SC_40 : SC_122; }
 const COL = {
   X:{bg:'#FFD700',fg:'#222'}, 10:{bg:'#FFD700',fg:'#222'},
   9:{bg:'#FFE840',fg:'#222'}, 8:{bg:'#CC0000',fg:'#fff'},
@@ -545,20 +548,20 @@ function today(){ return new Date().toISOString().slice(0,10); }
 function nowTime(){ return new Date().toTimeString().slice(0,5); }
 function starsHTML(n){ return '★'.repeat(n)+'☆'.repeat(5-n); }
 
-function scoreFromDist(d, bowType){
-  // 壓線容許：2 SVG 單位（約手機上 2px），落點中心在環線外 2 單位內算高分
+function scoreFromDist(d, face){
+  // 壓線容許：1 SVG 單位。判分依靶紙決定，與弓種無關
   const t = 1;
   const e = Math.max(0, d - t);
-  if(bowType==='compound'){
-    if(e<=11.67)  return 'X';
-    if(e<=23.33)  return '10';
-    if(e<=46.67)  return '9';
-    if(e<=70)     return '8';
-    if(e<=93.33)  return '7';
-    if(e<=116.67) return '6';
-    if(e<=140)    return '5';
+  if(face==='40cm'){            // 6~10 環縮小靶（環寬 28，X 環半徑 14）
+    if(e<=14)  return 'X';
+    if(e<=28)  return '10';
+    if(e<=56)  return '9';
+    if(e<=84)  return '8';
+    if(e<=112) return '7';
+    if(e<=140) return '6';
     return 'M';
   }
+  // 122cm 1~10 環大靶（X 環半徑 7）
   if(e<=7)   return 'X';  if(e<=14)  return '10'; if(e<=28) return '9';
   if(e<=42)  return '8';  if(e<=56)  return '7';  if(e<=70) return '6';
   if(e<=84)  return '5';  if(e<=98)  return '4';  if(e<=112)return '3';
@@ -625,22 +628,41 @@ function calcArrowPositionStats(sessions, bowType){
 }
 
 // ── TARGET SVG CONTENT ──────────────────────────
-function recurveRings(face){
-  const xr=face==='40cm'?5:face==='80cm'?10:7.5;
-  const op40=face==='40cm'?'0':'1';
+function targetRings(face){
+  if(face==='40cm'){
+    // 40cm 縮小靶：6~10 環（環寬 28），X 環半徑 14 = 10 環半徑 28 的一半
+    return `
+<circle cx="150" cy="150" r="140" fill="#1155CC" stroke="#003087" stroke-width=".5"/>
+<circle cx="150" cy="150" r="112" fill="#CC0000" stroke="#AA0000" stroke-width=".5"/>
+<circle cx="150" cy="150" r="84"  fill="#EE2222" stroke="#CC0000" stroke-width=".5"/>
+<circle cx="150" cy="150" r="56"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="28"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="14"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="14"  fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<line x1="146" y1="150" x2="154" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
+<line x1="150" y1="146" x2="150" y2="154" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
+<line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
+<line x1="150" y1="0" x2="150" y2="300" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
+<text x="150" y="25"  text-anchor="middle" font-size="9" fill="rgba(255,255,255,.55)">6</text>
+<text x="150" y="51"  text-anchor="middle" font-size="9" fill="rgba(255,255,255,.55)">7</text>
+<text x="150" y="79"  text-anchor="middle" font-size="9" fill="rgba(255,255,255,.55)">8</text>
+<text x="150" y="107" text-anchor="middle" font-size="9" fill="rgba(0,0,0,.4)">9</text>
+<text x="150" y="129" text-anchor="middle" font-size="9" fill="rgba(0,0,0,.4)">10</text>`;
+  }
+  // 122cm 大靶：1~10 環（環寬 14），X 環半徑 7 = 10 環半徑 14 的一半
   return `
-<circle cx="150" cy="150" r="140" fill="#f0f0f0" stroke="#ccc" stroke-width="1" opacity="${op40}"/>
-<circle cx="150" cy="150" r="126" fill="#e0e0e0" stroke="#ccc" stroke-width=".5" opacity="${op40}"/>
-<circle cx="150" cy="150" r="112" fill="#181818" stroke="#333" stroke-width=".5" opacity="${op40}"/>
-<circle cx="150" cy="150" r="98"  fill="#282828" stroke="#444" stroke-width=".5" opacity="${op40}"/>
+<circle cx="150" cy="150" r="140" fill="#f0f0f0" stroke="#ccc" stroke-width="1"/>
+<circle cx="150" cy="150" r="126" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>
+<circle cx="150" cy="150" r="112" fill="#181818" stroke="#333" stroke-width=".5"/>
+<circle cx="150" cy="150" r="98"  fill="#282828" stroke="#444" stroke-width=".5"/>
 <circle cx="150" cy="150" r="84"  fill="#003087" stroke="#003087" stroke-width=".5"/>
 <circle cx="150" cy="150" r="70"  fill="#1155CC" stroke="#003087" stroke-width=".5"/>
 <circle cx="150" cy="150" r="56"  fill="#CC0000" stroke="#CC0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="42"  fill="#EE2222" stroke="#CC0000" stroke-width=".5"/>
 <circle cx="150" cy="150" r="28"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="14"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="${xr}"   fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="${xr}"   fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
+<circle cx="150" cy="150" r="7"   fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
+<circle cx="150" cy="150" r="7"   fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
 <line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
 <line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
@@ -657,32 +679,8 @@ function recurveRings(face){
 <text x="150" y="141" text-anchor="middle" font-size="8.5" fill="rgba(0,0,0,.35)">10</text>`;
 }
 
-function compoundRings(face){
-  const xr=face==='40cm'?5:face==='80cm'?10:7.5;
-  const op40=face==='40cm'?'0':'1';
-  return `
-<circle cx="150" cy="150" r="140"    fill="#1155CC" stroke="#003087" stroke-width=".5" opacity="${op40}"/>
-<circle cx="150" cy="150" r="116.67" fill="#003087" stroke="#002070" stroke-width=".5" opacity="${op40}"/>
-<circle cx="150" cy="150" r="93.33"  fill="#EE2222" stroke="#CC0000" stroke-width=".5" opacity="${op40}"/>
-<circle cx="150" cy="150" r="70"     fill="#CC0000" stroke="#AA0000" stroke-width=".5" opacity="${op40}"/>
-<circle cx="150" cy="150" r="46.67"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="23.33"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="${xr}"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
-<circle cx="150" cy="150" r="${xr}"  fill="none"    stroke="rgba(0,0,0,.4)" stroke-width="1"/>
-<line x1="147" y1="150" x2="153" y2="150" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
-<line x1="150" y1="147" x2="150" y2="153" stroke="rgba(0,0,0,.3)" stroke-width=".8"/>
-<line x1="0" y1="150" x2="300" y2="150" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
-<line x1="150" y1="0" x2="150" y2="300" stroke="rgba(0,0,0,.06)" stroke-width=".5"/>
-<text x="150" y="25"  text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,.5)">5</text>
-<text x="150" y="48"  text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,.5)">6</text>
-<text x="150" y="71"  text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,.5)">7</text>
-<text x="150" y="94"  text-anchor="middle" font-size="8.5" fill="rgba(255,255,255,.5)">8</text>
-<text x="150" y="118" text-anchor="middle" font-size="8.5" fill="rgba(0,0,0,.35)">9</text>
-<text x="150" y="141" text-anchor="middle" font-size="8.5" fill="rgba(0,0,0,.35)">10</text>`;
-}
-
-function updateTargetRings(bowType){
-  const rings = bowType==='compound' ? compoundRings(S.cur?.face) : recurveRings(S.cur?.face);
+function updateTargetRings(face){
+  const rings = targetRings(face);
   const el1 = document.getElementById('target-rings');
   const el2 = document.getElementById('target-rings-big');
   if(el1) el1.innerHTML = rings;
@@ -1019,7 +1017,7 @@ function deleteSlotArrow(){
 // ── TOUCH + CLICK HANDLERS ───────────────────────
 document.addEventListener('DOMContentLoaded', ()=>{
   initForm();
-  updateTargetRings('recurve');
+  updateTargetRings(S.cur?.face || '122cm');
 
   // Small target — in-place pinch zoom + tap to record
   const svg=document.getElementById('tsvg');
@@ -1027,7 +1025,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(!S.cur||S.end.arrows.length>=S.cur.ape) return;
     const r=svg.getBoundingClientRect();
     const sx=(cx-r.left)*(300/r.width), sy=(cy-r.top)*(300/r.height);
-    addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2), S.cur.bowType||'recurve'), sx/300, sy/300);
+    addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2), S.cur.face||'122cm'), sx/300, sy/300);
   }
   const tgtWrap=svg.parentElement;
   const SZ={scale:1,tx:0,ty:0};
@@ -1137,7 +1135,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
     const r=bigSvg.getBoundingClientRect();
     const sx=(cx-r.left)*(300/r.width), sy=(cy-r.top)*(300/r.height);
     if(sx<0||sx>300||sy<0||sy>300) return;
-    addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2),S.cur.bowType||'recurve'),sx/300,sy/300);
+    addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2),S.cur.face||'122cm'),sx/300,sy/300);
     renderMarkersBig(); updateBigModalHint();
     if(S.cur&&S.end.arrows.length>=S.cur.ape) setTimeout(closeTargetModal,700);
   }
@@ -1146,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', ()=>{
 // ── BIG TARGET MODAL ─────────────────────────────
 function openTargetModal(){
   if(!S.cur||S.end.arrows.length>=S.cur.ape) return;
-  updateTargetRings(S.cur.bowType||'recurve');
+  updateTargetRings(S.cur.face||'122cm');
   updateBigModalHint(); renderMarkersBig();
   document.getElementById('tmodal').classList.add('on');
   document.body.style.overflow='hidden';
@@ -1205,16 +1203,15 @@ function renderScore(){
   if(c.notes)   mp.push(c.notes);
   document.getElementById('si-meta').textContent=mp.join(' · ');
   document.getElementById('hinfo').textContent=`${c.archer}  ${c.dist}  ${c.bowType==='compound'?'複合':'反曲'}  第${c.ends.length+1}/${c.numEnds}輪`;
-  updateTargetRings(c.bowType||'recurve');
+  updateTargetRings(c.face||'122cm');
   renderScoreBtns(); renderSlots(); renderMarkers(); renderEndsHistory(); updateTotals(); updateFinBtn(); renderMatchHeader();
 }
 
 function renderScoreBtns(){
   if(!S.cur) return;
-  const isC=S.cur.bowType==='compound';
   const el=document.getElementById('sbns');
   el.className='sbns';
-  el.innerHTML=(isC?SC_COMPOUND:SC_RECURVE).map(s=>{
+  el.innerHTML=scoresForFace(S.cur.face).map(s=>{
     const c=COL[s];
     return`<button class="sbn" style="background:${c.bg};color:${c.fg}" onclick="addArrow('${s}',null,null)">${s}</button>`;
   }).join('');
@@ -1495,7 +1492,7 @@ function toggleEndTarget(sid, ei){
   panel.id=panelId;
   panel.style.cssText='padding:10px 8px;background:rgba(0,0,0,.2);border-radius:8px;margin-bottom:4px';
   if(hasPos){
-    const rings=s.bowType==='compound'?compoundRings():recurveRings();
+    const rings=targetRings(s.face);
     const markers=end.arrows.filter(a=>a.x!==null).map(a=>{
       const c=COL[a.s];
       return`<g><circle cx="${a.x*300}" cy="${a.y*300}" r="9" fill="${c.bg}" stroke="${c.fg}" stroke-width="2" opacity=".95"/><text x="${a.x*300}" y="${a.y*300+4}" text-anchor="middle" font-size="7.5" fill="${c.fg}" font-weight="bold">${a.s}</text></g>`;
