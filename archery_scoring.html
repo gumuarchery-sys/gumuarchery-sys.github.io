@@ -627,13 +627,12 @@ function calcArrowPositionStats(sessions, bowType){
 // ── TARGET SVG CONTENT ──────────────────────────
 function recurveRings(face){
   const xr=face==='40cm'?5:face==='80cm'?10:7.5;
-  const hideBelow5=face==='40cm';
+  const op40=face==='40cm'?'0':'1';
   return `
-${hideBelow5?'':
-`<circle cx="150" cy="150" r="140" fill="#f0f0f0" stroke="#ccc" stroke-width="1"/>
-<circle cx="150" cy="150" r="126" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>
-<circle cx="150" cy="150" r="112" fill="#181818" stroke="#333" stroke-width=".5"/>
-<circle cx="150" cy="150" r="98"  fill="#282828" stroke="#444" stroke-width=".5"/>`}
+<circle cx="150" cy="150" r="140" fill="#f0f0f0" stroke="#ccc" stroke-width="1" opacity="${op40}"/>
+<circle cx="150" cy="150" r="126" fill="#e0e0e0" stroke="#ccc" stroke-width=".5" opacity="${op40}"/>
+<circle cx="150" cy="150" r="112" fill="#181818" stroke="#333" stroke-width=".5" opacity="${op40}"/>
+<circle cx="150" cy="150" r="98"  fill="#282828" stroke="#444" stroke-width=".5" opacity="${op40}"/>
 <circle cx="150" cy="150" r="84"  fill="#003087" stroke="#003087" stroke-width=".5"/>
 <circle cx="150" cy="150" r="70"  fill="#1155CC" stroke="#003087" stroke-width=".5"/>
 <circle cx="150" cy="150" r="56"  fill="#CC0000" stroke="#CC0000" stroke-width=".5"/>
@@ -660,13 +659,12 @@ ${hideBelow5?'':
 
 function compoundRings(face){
   const xr=face==='40cm'?5:face==='80cm'?10:7.5;
-  const hideBelow5=face==='40cm';
+  const op40=face==='40cm'?'0':'1';
   return `
-${hideBelow5?'':
-`<circle cx="150" cy="150" r="140"    fill="#1155CC" stroke="#003087" stroke-width=".5"/>
-<circle cx="150" cy="150" r="116.67" fill="#003087" stroke="#002070" stroke-width=".5"/>
-<circle cx="150" cy="150" r="93.33"  fill="#EE2222" stroke="#CC0000" stroke-width=".5"/>
-<circle cx="150" cy="150" r="70"     fill="#CC0000" stroke="#AA0000" stroke-width=".5"/>`}
+<circle cx="150" cy="150" r="140"    fill="#1155CC" stroke="#003087" stroke-width=".5" opacity="${op40}"/>
+<circle cx="150" cy="150" r="116.67" fill="#003087" stroke="#002070" stroke-width=".5" opacity="${op40}"/>
+<circle cx="150" cy="150" r="93.33"  fill="#EE2222" stroke="#CC0000" stroke-width=".5" opacity="${op40}"/>
+<circle cx="150" cy="150" r="70"     fill="#CC0000" stroke="#AA0000" stroke-width=".5" opacity="${op40}"/>
 <circle cx="150" cy="150" r="46.67"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="23.33"  fill="#FFD700" stroke="#DAA520" stroke-width=".5"/>
 <circle cx="150" cy="150" r="${xr}"  fill="#FFE840" stroke="#DAA520" stroke-width=".5"/>
