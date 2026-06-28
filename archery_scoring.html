@@ -178,6 +178,35 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
 .opp-inp:focus{outline:none;border-color:var(--accent)}
 .daily-bar{display:flex;align-items:center;justify-content:space-between;padding:6px 12px;background:rgba(255,255,255,.04);border-radius:8px;margin-bottom:8px;font-size:.8rem;color:var(--dim)}
 .daily-val{color:var(--accent);font-weight:700;font-size:.95rem}
+/* ── 懸浮延遲監看視窗 ──────────────────────────── */
+#fm-btn{position:fixed;bottom:140px;right:16px;width:46px;height:46px;border-radius:50%;background:rgba(15,15,15,.9);border:1.5px solid rgba(240,165,0,.6);color:#f0a500;font-size:1.25rem;cursor:pointer;z-index:150;display:flex;align-items:center;justify-content:center;backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);box-shadow:0 2px 16px rgba(0,0,0,.5);touch-action:none;-webkit-tap-highlight-color:transparent}
+#fm-btn.fm-active{border-color:#f0a500;background:rgba(30,20,0,.92)}
+#fm-panel{position:fixed;bottom:196px;right:16px;width:272px;background:rgba(10,10,10,.95);border:1px solid rgba(255,255,255,.14);border-radius:14px;backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);z-index:149;display:none;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,.65);touch-action:none}
+#fm-panel.open{display:block}
+#fm-tbar{display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(240,165,0,.1);border-bottom:1px solid rgba(255,255,255,.08);cursor:grab;user-select:none;-webkit-user-select:none}
+#fm-tbar:active{cursor:grabbing}
+#fm-cvwrap{position:relative;width:100%;height:153px;background:#000;overflow:hidden}
+#fm-canvas{position:absolute;top:50%;left:50%;transform:translate(-50%,-50%)}
+#fm-ovl{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;background:rgba(10,10,10,.92)}
+#fm-ovl-icon{font-size:1.8rem}
+#fm-ovl-txt{font-size:.78rem;color:#888}
+#fm-cnt{font-size:2.8rem;font-weight:900;color:#f0a500;display:none}
+#fm-rec{position:absolute;top:6px;left:8px;display:none;align-items:center;gap:5px;background:rgba(0,0,0,.6);padding:2px 9px;border-radius:12px;font-size:.7rem}
+#fm-rec.show{display:flex}
+#fm-rec-dot{width:6px;height:6px;background:#e53935;border-radius:50%;animation:blink 1s infinite}
+#fm-ctrl{padding:9px 12px;display:flex;flex-direction:column;gap:7px}
+.fm-cr{display:flex;gap:6px}
+.fm-cbtn{flex:1;height:30px;border-radius:15px;border:1px solid #444;background:#222;color:#888;font-size:.76rem;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.fm-cbtn.on{background:rgba(240,165,0,.12);color:#f0a500;border-color:#f0a500}
+.fm-dr{display:flex;align-items:center;justify-content:center;gap:6px}
+.fm-adj{width:33px;height:33px;border-radius:50%;border:1px solid #444;background:#222;color:#fff;font-size:1.1rem;cursor:pointer;display:flex;align-items:center;justify-content:center;-webkit-tap-highlight-color:transparent}
+#fm-dv{width:44px;text-align:center;font-size:1.15rem;font-weight:700;color:#f0a500}
+.fm-br{display:flex;gap:6px}
+.fm-mb{flex:1;height:36px;border:none;border-radius:8px;font-size:.82rem;font-weight:700;cursor:pointer;-webkit-tap-highlight-color:transparent}
+#fm-sb{background:#f0a500;color:#111}
+#fm-pb{background:#333;color:#fff;border:1px solid #555}
+#fm-xb{background:#c0392b;color:#fff}
+.fm-h{display:none!important}
 </style>
 </head>
 <body>
@@ -527,6 +556,8 @@ let selectedWx = ['☀️ 晴天'];
 let selectedBody = 3;
 let selectedBowType = 'recurve';
 let selectedEndIndex = -1;
+let viewingEndArrow = {endIdx:-1, arrowPos:-1}; // 計分頁輪次箭位落點檢視
+let lastArrowTimerId = null;                      // 最後一箭倒數計時器
 let pendingSlotIndex = -1;
 let pendingEndTot = 0;
 
@@ -913,6 +944,7 @@ function createSession(){
 }
 
 function finishEnd(){
+  clearLastArrowCountdown(); // 確保倒數計時清除
   if(!S.cur||!S.end.arrows.length) return;
   const tot=S.end.arrows.reduce((a,x)=>a+ns(x.s),0);
   if(isMatchPlay(S.cur)){
@@ -972,8 +1004,42 @@ function addArrow(score, x, y){
   if(ps) ps.textContent = x!==null
     ? `✓ ${score}分，落點 (${(x*100).toFixed(0)}%, ${(y*100).toFixed(0)}%)`
     : `✓ ${score}分（未記錄落點）`;
-  if(S.end.arrows.length>=S.cur.ape)
-    setTimeout(()=>{ if(S.cur&&S.end.arrows.length>=S.cur.ape) finishEnd(); }, 700);
+  if(S.end.arrows.length>=S.cur.ape){
+    startLastArrowCountdown(); // 最後一箭：啟動 5 秒倒數確認
+  }
+}
+
+function startLastArrowCountdown(){
+  clearLastArrowCountdown();
+  let secs=5;
+  const ps=document.getElementById('pstatus');
+  const btnStyle='background:rgba(244,67,54,.15);border:1px solid var(--err);color:var(--err);border-radius:5px;padding:2px 10px;cursor:pointer;font-size:.8rem;margin-left:6px;-webkit-tap-highlight-color:transparent;font-weight:700';
+  function tick(){
+    if(!S.cur||S.end.arrows.length<(S.cur?.ape||6)){ clearLastArrowCountdown(); return; }
+    if(ps) ps.innerHTML=`✅ 第${S.cur.ape}箭完成　<b style="color:var(--accent)">${secs}</b> 秒後自動登錄 <button onclick="cancelLastArrow()" style="${btnStyle}">↩ 撤銷</button>`;
+    if(secs<=0){
+      clearLastArrowCountdown();
+      if(ps) ps.textContent='完成此輪 ✓';
+      finishEnd();
+      return;
+    }
+    secs--;
+    lastArrowTimerId=setTimeout(tick,1000);
+  }
+  tick();
+}
+
+function clearLastArrowCountdown(){
+  if(lastArrowTimerId){ clearTimeout(lastArrowTimerId); lastArrowTimerId=null; }
+}
+
+function cancelLastArrow(){
+  clearLastArrowCountdown();
+  if(!S.cur||!S.end.arrows.length) return;
+  S.end.arrows.pop();
+  save(); renderSlots(); renderMarkers(); renderMarkersBig(); updateTotals(); updateFinBtn(); updateBigModalHint();
+  const ps=document.getElementById('pstatus');
+  if(ps) ps.textContent=`已撤銷，請重新點擊第 ${S.cur.ape} 支箭`;
 }
 
 function undoLast(){
@@ -1137,7 +1203,8 @@ document.addEventListener('DOMContentLoaded', ()=>{
     if(sx<0||sx>300||sy<0||sy>300) return;
     addArrow(scoreFromDist(Math.sqrt((sx-150)**2+(sy-150)**2),S.cur.face||'122cm'),sx/300,sy/300);
     renderMarkersBig(); updateBigModalHint();
-    if(S.cur&&S.end.arrows.length>=S.cur.ape) setTimeout(closeTargetModal,700);
+    // 最後一箭：延遲關閉 modal，讓使用者看到落點後再回主畫面看倒數
+    if(S.cur&&S.end.arrows.length>=S.cur.ape) setTimeout(closeTargetModal,800);
   }
 });
 
@@ -1279,7 +1346,40 @@ function renderEndsHistory(){
     doneRows=S.cur.ends.map((e,i)=>{
       const bdgs=e.arrows.map(a=>{const c=COL[a.s];return`<span class="ebdg" style="background:${c.bg};color:${c.fg}">${a.s}</span>`;}).join('');
       const isSelected=i===selectedEndIndex?'border-color:var(--accent);background:rgba(220,38,38,.08)':'';
-      return`<div class="erow" onclick="selectEnd(${i})" style="cursor:pointer;transition:all .2s;border:1px solid transparent;${isSelected}"><span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}</div>`;
+      // ── 箭位落點按鈕 ──
+      const hasPos=e.arrows.some(a=>a.x!==null&&a.y!==null);
+      let posSection='';
+      if(hasPos){
+        const posBtns=e.arrows.map((a,ai)=>{
+          if(a.x===null||a.y===null) return '';
+          const isActive=viewingEndArrow.endIdx===i&&viewingEndArrow.arrowPos===ai;
+          const c=COL[a.s];
+          return`<button onclick="event.stopPropagation();toggleEndArrowPos(${i},${ai})" style="padding:2px 8px;border-radius:4px;border:1px solid ${isActive?c.bg:'rgba(255,255,255,.2)'};background:${isActive?c.bg:'transparent'};color:${isActive?c.fg:'var(--dim)'};cursor:pointer;font-size:.72rem;-webkit-tap-highlight-color:transparent">第${ai+1}箭</button>`;
+        }).filter(Boolean).join('');
+        let miniSvg='';
+        if(viewingEndArrow.endIdx===i&&viewingEndArrow.arrowPos>=0){
+          const selAi=viewingEndArrow.arrowPos;
+          const selA=e.arrows[selAi];
+          if(selA&&selA.x!==null){
+            const rings=targetRings(S.cur?.face||'122cm');
+            const markers=e.arrows.map((a,ai)=>{
+              if(a.x===null) return '';
+              const c=COL[a.s];
+              return ai===selAi
+                ?`<circle cx="${a.x*300}" cy="${a.y*300}" r="8" fill="${c.bg}" stroke="#fff" stroke-width="2.5"/><text x="${a.x*300}" y="${a.y*300+3}" text-anchor="middle" font-size="9" fill="${c.fg}" font-weight="bold">${ai+1}</text>`
+                :`<circle cx="${a.x*300}" cy="${a.y*300}" r="5" fill="${c.bg}" stroke="#fff" stroke-width="1" opacity="0.3"/>`;
+            }).join('');
+            miniSvg=`<svg viewBox="0 0 300 300" style="width:110px;height:110px;border-radius:8px;display:block;margin-top:6px;flex-shrink:0">${rings}${markers}</svg>`;
+          }
+        }
+        if(posBtns) posSection=`<div style="margin-top:5px;display:flex;flex-wrap:wrap;gap:4px;align-items:flex-start">${posBtns}${miniSvg}</div>`;
+      }
+      return`<div onclick="selectEnd(${i})" style="cursor:pointer;padding:7px 8px;border-radius:6px;margin-bottom:3px;background:rgba(0,0,0,.04);font-size:.8rem;border:1px solid transparent;${isSelected}">
+        <div style="display:flex;align-items:center;gap:5px">
+          <span class="enum">${e.n}</span><div class="earr">${bdgs}</div><span class="etot">${e.tot}</span>${delBtn(i)}
+        </div>
+        ${posSection}
+      </div>`;
     }).join('');
   }
   el.innerHTML=curRow+doneRows;
@@ -1288,6 +1388,14 @@ function selectEnd(idx){
   selectedEndIndex=selectedEndIndex===idx?-1:idx;
   renderEndsHistory();
   renderMarkers();
+}
+function toggleEndArrowPos(endIdx, arrowPos){
+  if(viewingEndArrow.endIdx===endIdx&&viewingEndArrow.arrowPos===arrowPos){
+    viewingEndArrow={endIdx:-1,arrowPos:-1};
+  } else {
+    viewingEndArrow={endIdx,arrowPos};
+  }
+  renderEndsHistory();
 }
 function deleteCurrentArrow(idx){
   if(!S.cur||idx<0||idx>=S.end.arrows.length) return;
@@ -1739,6 +1847,211 @@ renderStats();
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('/sw.js');
 }
+</script>
+<!-- ── 懸浮延遲監看視窗 ── -->
+<button id="fm-btn" title="延遲監看">📷</button>
+<div id="fm-panel">
+  <div id="fm-tbar">
+    <span style="font-size:.78rem;color:#f0a500;font-weight:700;letter-spacing:1px">📷 延遲監看</span>
+    <button id="fm-close" style="background:none;border:none;color:#888;font-size:1rem;cursor:pointer;padding:0 4px;-webkit-tap-highlight-color:transparent">✕</button>
+  </div>
+  <div id="fm-cvwrap">
+    <canvas id="fm-canvas"></canvas>
+    <div id="fm-ovl">
+      <div id="fm-ovl-icon">📷</div>
+      <div id="fm-ovl-txt">選擇鏡頭後按開始</div>
+      <div id="fm-cnt"></div>
+    </div>
+    <div id="fm-rec"><div id="fm-rec-dot"></div><span id="fm-rec-lbl">延遲中</span></div>
+  </div>
+  <div id="fm-ctrl">
+    <div class="fm-cr">
+      <button class="fm-cbtn on" id="fm-cam-b">📷 後鏡</button>
+      <button class="fm-cbtn"    id="fm-cam-f">🤳 前鏡</button>
+    </div>
+    <div class="fm-dr">
+      <span style="font-size:.75rem;color:#aaa">延遲</span>
+      <button class="fm-adj" id="fm-minus">−</button>
+      <div id="fm-dv">5</div>
+      <span style="font-size:.75rem;color:#aaa">秒</span>
+      <button class="fm-adj" id="fm-plus">＋</button>
+    </div>
+    <div class="fm-br">
+      <button class="fm-mb" id="fm-sb">▶ 開始</button>
+      <button class="fm-mb fm-h" id="fm-pb">⏸ 暫停</button>
+      <button class="fm-mb fm-h" id="fm-xb">■ 停止</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── 懸浮延遲監看（獨立 scope，不污染計分系統） ──────
+(function(){
+  const fmBtn   = document.getElementById('fm-btn');
+  const fmPanel = document.getElementById('fm-panel');
+  const fmTbar  = document.getElementById('fm-tbar');
+  const fmClose = document.getElementById('fm-close');
+  const fmCv    = document.getElementById('fm-canvas');
+  const fmCtx   = fmCv.getContext('2d');
+  const fmOvl   = document.getElementById('fm-ovl');
+  const fmOvlTxt= document.getElementById('fm-ovl-txt');
+  const fmCnt   = document.getElementById('fm-cnt');
+  const fmRec   = document.getElementById('fm-rec');
+  const fmRecLbl= document.getElementById('fm-rec-lbl');
+  const fmCamB  = document.getElementById('fm-cam-b');
+  const fmCamF  = document.getElementById('fm-cam-f');
+  const fmMinus = document.getElementById('fm-minus');
+  const fmPlus  = document.getElementById('fm-plus');
+  const fmDv    = document.getElementById('fm-dv');
+  const fmSb    = document.getElementById('fm-sb');
+  const fmPb    = document.getElementById('fm-pb');
+  const fmXb    = document.getElementById('fm-xb');
+
+  const capCv = document.createElement('canvas');
+  const capCx = capCv.getContext('2d', {willReadFrequently:true});
+  const vid   = document.createElement('video');
+  vid.muted=true; vid.playsInline=true; vid.setAttribute('playsinline','');
+
+  let delay=5, running=false, paused=false;
+  let stream=null, facing='environment';
+  let buf=[], loopTmr=null, t0=0;
+  let capW=272, capH=153;
+  const FPS=15, IV=Math.round(1000/FPS);
+
+  // ── 開關面板 ──
+  fmBtn.addEventListener('click', ()=>{
+    fmPanel.classList.toggle('open');
+    fmBtn.classList.toggle('fm-active', fmPanel.classList.contains('open'));
+  });
+  fmClose.addEventListener('click', ()=>{
+    fmPanel.classList.remove('open');
+    fmBtn.classList.remove('fm-active');
+  });
+
+  // ── 拖曳（觸控）──
+  let dragging=false, dragTarget=null, offX=0, offY=0;
+  function onDragStart(el, e){
+    dragging=true; dragTarget=el;
+    const t=e.touches?e.touches[0]:e;
+    const r=el.getBoundingClientRect();
+    offX=t.clientX-r.left; offY=t.clientY-r.top;
+    e.preventDefault();
+  }
+  fmTbar.addEventListener('touchstart', e=>onDragStart(fmPanel,e), {passive:false});
+  fmBtn.addEventListener('touchstart', e=>{ if(!fmPanel.classList.contains('open')) onDragStart(fmBtn,e); }, {passive:false});
+  document.addEventListener('touchmove', e=>{
+    if(!dragging||!dragTarget) return;
+    const t=e.touches[0];
+    const tw=dragTarget.offsetWidth, th=dragTarget.offsetHeight;
+    let left=t.clientX-offX, top=t.clientY-offY;
+    left=Math.max(0,Math.min(window.innerWidth-tw,left));
+    top=Math.max(0,Math.min(window.innerHeight-th,top));
+    dragTarget.style.left=left+'px'; dragTarget.style.top=top+'px';
+    dragTarget.style.right='auto'; dragTarget.style.bottom='auto';
+    e.preventDefault();
+  }, {passive:false});
+  document.addEventListener('touchend', ()=>{ dragging=false; dragTarget=null; });
+
+  // ── 鏡頭選擇 ──
+  fmCamB.addEventListener('click', ()=>{
+    facing='environment'; fmCamB.classList.add('on'); fmCamF.classList.remove('on');
+    if(running){ stopCap(); startCam(); }
+  });
+  fmCamF.addEventListener('click', ()=>{
+    facing='user'; fmCamF.classList.add('on'); fmCamB.classList.remove('on');
+    if(running){ stopCap(); startCam(); }
+  });
+
+  // ── 延遲調整 ──
+  fmMinus.addEventListener('click', ()=>{ if(delay>1){ delay--; fmDv.textContent=delay; } });
+  fmPlus.addEventListener('click', ()=>{ if(delay<60){ delay++; fmDv.textContent=delay; } });
+
+  // ── 按鈕 ──
+  fmSb.addEventListener('click', startCam);
+  fmPb.addEventListener('click', ()=>{
+    paused=!paused;
+    fmPb.textContent=paused?'▶ 繼續':'⏸ 暫停';
+  });
+  fmXb.addEventListener('click', stopAll);
+
+  function shw(...els){ els.forEach(e=>e.classList.remove('fm-h')); }
+  function hid(...els){ els.forEach(e=>e.classList.add('fm-h')); }
+
+  async function startCam(){
+    try {
+      if(stream) stream.getTracks().forEach(t=>t.stop());
+      stream = await navigator.mediaDevices.getUserMedia({
+        video:{facingMode:facing, width:{ideal:640}, height:{ideal:480}}, audio:false
+      });
+      vid.srcObject=stream; await vid.play();
+      await new Promise(res=>{
+        if(vid.videoWidth>0){res();return;}
+        vid.addEventListener('loadedmetadata',res,{once:true});
+      });
+      const vw=vid.videoWidth||272, vh=vid.videoHeight||153;
+      // 縮放讓最長邊不超過 272，高不超過 153
+      const scale=Math.min(272/vw, 153/vh, 1);
+      capW=Math.round(vw*scale); capH=Math.round(vh*scale);
+      capCv.width=capW; capCv.height=capH;
+      fmCv.width=capW; fmCv.height=capH;
+      fmCv.style.width=capW+'px'; fmCv.style.height=capH+'px';
+      buf=[]; t0=Date.now(); running=true; paused=false;
+      hid(fmSb); shw(fmPb,fmXb);
+      fmRec.classList.add('show');
+      fmOvlTxt.textContent='緩衝中，請稍候…';
+      fmCnt.style.display=''; fmOvl.style.display='flex';
+      startLoop();
+    } catch(err){
+      fmOvl.style.display='flex';
+      fmOvlTxt.textContent='相機錯誤：'+err.message;
+      fmCnt.style.display='none';
+    }
+  }
+
+  function startLoop(){
+    if(!running) return;
+    tick();
+    loopTmr=setTimeout(startLoop, IV);
+  }
+
+  function tick(){
+    if(!running||paused||vid.readyState<2) return;
+    const now=Date.now();
+    capCx.drawImage(vid,0,0,capW,capH);
+    const img=capCx.getImageData(0,0,capW,capH);
+    buf.push({data:img,ts:now});
+    const cutoff=now-(delay+4)*1000;
+    while(buf.length&&buf[0].ts<cutoff) buf.shift();
+    const tgt=now-delay*1000;
+    let best=null;
+    for(let i=buf.length-1;i>=0;i--){ if(buf[i].ts<=tgt){best=buf[i];break;} }
+    if(best){
+      fmOvl.style.display='none';
+      fmCtx.putImageData(best.data,0,0);
+      fmRecLbl.textContent=`延遲 ${delay} 秒`;
+    } else {
+      fmOvl.style.display='flex';
+      const rem=Math.ceil((delay*1000-(now-t0))/1000);
+      fmCnt.textContent=rem>0?rem:'…';
+    }
+  }
+
+  function stopCap(){
+    running=false; paused=false;
+    if(loopTmr) clearTimeout(loopTmr);
+    if(stream) stream.getTracks().forEach(t=>t.stop());
+    buf=[];
+  }
+  function stopAll(){
+    stopCap(); stream=null;
+    shw(fmSb); hid(fmPb,fmXb);
+    fmRec.classList.remove('show');
+    fmOvl.style.display='flex';
+    fmCnt.style.display='none';
+    fmOvlTxt.textContent='選擇鏡頭後按開始';
+    fmPb.textContent='⏸ 暫停';
+  }
+})();
 </script>
 </body>
 </html>
