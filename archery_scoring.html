@@ -397,7 +397,6 @@ select.fi option{background:#FDF7EF;color:#2C1B0E}
           <label class="fl">靶面</label>
           <select class="fi" id="i-face">
             <option value="40cm">40cm</option>
-            <option value="60cm">60cm</option>
             <option value="80cm">80cm</option>
             <option value="122cm" selected>122cm</option>
           </select>
@@ -627,7 +626,7 @@ function calcArrowPositionStats(sessions, bowType){
 
 // ── TARGET SVG CONTENT ──────────────────────────
 function recurveRings(face){
-  const xr=face==='40cm'?12:7.5;
+  const xr=face==='40cm'?12:face==='80cm'?10:7.5;
   return `
 <circle cx="150" cy="150" r="140" fill="#f0f0f0" stroke="#ccc" stroke-width="1"/>
 <circle cx="150" cy="150" r="126" fill="#e0e0e0" stroke="#ccc" stroke-width=".5"/>
@@ -658,7 +657,7 @@ function recurveRings(face){
 }
 
 function compoundRings(face){
-  const xr=face==='40cm'?12:7.5;
+  const xr=face==='40cm'?12:face==='80cm'?10:7.5;
   return `
 <circle cx="150" cy="150" r="140"    fill="#1155CC" stroke="#003087" stroke-width=".5"/>
 <circle cx="150" cy="150" r="116.67" fill="#003087" stroke="#002070" stroke-width=".5"/>
